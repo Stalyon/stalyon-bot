@@ -128,7 +128,7 @@ public class MinesService {
         }
     }
 
-    @Scheduled(cron = "0 0/15 * * * *") // every 15 minutes
+    @Scheduled(cron = "50 0/15 * * * *") // every 15 minutes
     public void autoBuildTransport() {
         if (this.AUTO_BUILD_TRANSPORT) {
             // Récupération des planètes
@@ -169,8 +169,9 @@ public class MinesService {
                                 && !(ResourcesBuildingsUtils.canBuildMetalMine(resourcesBuildings.getMetalMine() + 1, resources)
                                 || ResourcesBuildingsUtils.canBuildCrystalMine(resourcesBuildings.getCrystalMine() + 1, resources)
                                 || this.AUTO_BUILD_DEUT && ResourcesBuildingsUtils.canBuildDeutSynth(resourcesBuildings.getDeuteriumSynthesizer() + 1, resources) && resourcesBuildings.getDeuteriumSynthesizer() < this.SYNTHE_DEUT_MAX
-                                || resourcesBuildings.getSolarPlant() < this.SOLAR_PLANT_MAX && ResourcesBuildingsUtils.canBuildCentraleSolaire(resourcesBuildings.getSolarPlant() + 1, resources)
-                                || resourcesBuildings.getSolarPlant() >= this.SOLAR_PLANT_MAX && ResourcesBuildingsUtils.canBuildFusionReactor(resourcesBuildings.getFusionReactor() + 1, resources, this.ENERGY_TECH))) {
+                                || ResourcesBuildingsUtils.notEnoughEnergy(resourcesBuildings, resources, this.AUTO_BUILD_DEUT)
+                                    && (resourcesBuildings.getSolarPlant() < this.SOLAR_PLANT_MAX && ResourcesBuildingsUtils.canBuildCentraleSolaire(resourcesBuildings.getSolarPlant() + 1, resources)
+                                        || resourcesBuildings.getSolarPlant() >= this.SOLAR_PLANT_MAX && ResourcesBuildingsUtils.canBuildFusionReactor(resourcesBuildings.getFusionReactor() + 1, resources, this.ENERGY_TECH)))) {
                             // Calculer le prochain bâtiment à lancer
                             PlanetsResourcesDto metalMineCost = ResourcesBuildingsUtils.getMetalMineCost(resourcesBuildings.getMetalMine() +1);
                             Integer metalMineEcoTime = ResourcesBuildingsUtils
@@ -188,7 +189,7 @@ public class MinesService {
                             Integer centraleSolaireEcoTime = ResourcesBuildingsUtils
                                     .getEcoTime(centraleSolaireCost, resourcesBuildings, resources, this.SERVER_SPEED, this.HAS_GEOLOGUE);
 
-                            PlanetsResourcesDto reactorFusionCost = ResourcesBuildingsUtils.getFusionReactorCost(resourcesBuildings.getSolarPlant() +1, this.ENERGY_TECH);
+                            PlanetsResourcesDto reactorFusionCost = ResourcesBuildingsUtils.getFusionReactorCost(resourcesBuildings.getFusionReactor() +1, this.ENERGY_TECH);
                             Integer reactorFusionEcoTime = ResourcesBuildingsUtils
                                     .getEcoTime(reactorFusionCost, resourcesBuildings, resources, this.SERVER_SPEED, this.HAS_GEOLOGUE);
 

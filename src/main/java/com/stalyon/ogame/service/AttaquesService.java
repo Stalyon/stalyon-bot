@@ -93,7 +93,7 @@ public class AttaquesService {
 
         int i = 0;
         boolean atLeastOnce = false;
-        while (!this.inactivesToSpy.isEmpty()  && slots.getExpTotal().equals(slots.getExpInUse())
+        while (!this.inactivesToSpy.isEmpty() && slots.getExpTotal().equals(slots.getExpInUse())
                 && slots.getInUse() +2 < slots.getTotal() && i < this.inactivesToSpy.size()) {
             CoordinateDto coords = this.inactivesToSpy.get(i).getCoordinate();
 

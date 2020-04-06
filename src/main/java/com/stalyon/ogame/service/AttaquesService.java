@@ -16,10 +16,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.HttpServerErrorException;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,25 +26,28 @@ public class AttaquesService {
     private static Logger LOGGER = LoggerFactory.getLogger(AttaquesService.class);
 
     @Value("${attaques.auto.coord.galaxy}")
-    private Integer coordGalaxy;
+    private Integer COORD_GALAXY;
 
     @Value("${attaques.auto.coord.system.min}")
-    private Integer coordSystemMin;
+    private Integer COORD_SYSTEM_MIN;
 
     @Value("${attaques.auto.coord.system.max}")
-    private Integer coordSystemMax;
+    private Integer COORD_SYSTEM_MAX;
 
     @Value("${attaques.auto.planet}")
-    private Integer autoPlanetId;
+    private Integer AUTO_PLANET_ID;
 
     @Value("${attaques.auto.cargo.stockage}")
-    private Integer cargoStockage;
+    private Integer CARGO_STOCKAGE;
 
     @Value("${attaques.auto.cargo.id}")
-    private Integer cargoId;
+    private Integer CARGO_ID;
 
     @Value("${attaques.auto.minimal.resources}")
-    private Integer minimalResources;
+    private Integer MINIMAL_RESOURCES;
+
+    @Value("${attaques.auto.planet.system}")
+    private Integer PLANET_SYSTEM;
 
     @Autowired
     private OgameApiService ogameApiService;
@@ -59,15 +59,15 @@ public class AttaquesService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void scanSystems() {
-        LOGGER.info("Scan des systèmes de " + this.coordGalaxy + ":"
-                + this.coordSystemMin + " à " + this.coordGalaxy + ":"
-                + this.coordSystemMax);
+        LOGGER.info("Scan des systèmes de " + this.COORD_GALAXY + ":"
+                + this.COORD_SYSTEM_MIN + " à " + this.COORD_GALAXY + ":"
+                + this.COORD_SYSTEM_MAX);
 
         List<InactivePlanetsDto> inactivesPlanets = new ArrayList<>();
         this.inactivesToSpy = new ArrayList<>();
 
-        for (int i=this.coordSystemMin; i<this.coordSystemMax; i++) {
-            GalaxyInfosDto galaxyInfos = this.ogameApiService.getGalaxyInfos(this.coordGalaxy, i);
+        for (int i = this.COORD_SYSTEM_MIN; i<this.COORD_SYSTEM_MAX; i++) {
+            GalaxyInfosDto galaxyInfos = this.ogameApiService.getGalaxyInfos(this.COORD_GALAXY, i);
             inactivesPlanets.addAll(
                     galaxyInfos.getPlanets()
                             .stream()
@@ -77,6 +77,10 @@ public class AttaquesService {
                             .collect(Collectors.toList())
             );
         }
+
+        // Tri des inactifs
+        inactivesPlanets
+                .sort(Comparator.comparingInt(i -> Math.abs(i.getCoordinate().getSystem() - this.PLANET_SYSTEM)));
 
         this.inactivesToSpy = inactivesPlanets;
         this.scanSystemsInit = Boolean.TRUE;
@@ -104,7 +108,7 @@ public class AttaquesService {
             formData.add("metal", "0");
             formData.add("crystal", "0");
             formData.add("deuterium", "0");
-            this.ogameApiService.sendFleet(this.autoPlanetId, formData);
+            this.ogameApiService.sendFleet(this.AUTO_PLANET_ID, formData);
 
             slots = this.ogameApiService.getSlots();
             i++;
@@ -155,7 +159,7 @@ public class AttaquesService {
         this.inactivesToAttack.addAll(inactivesToAttack
                 .stream()
                 .filter(inactive -> inactive.getResources() != null)
-                .filter(inactive -> (inactive.getResources().getMetal() + inactive.getResources().getCrystal() + inactive.getResources().getDeuterium()) > this.minimalResources)
+                .filter(inactive -> (inactive.getResources().getMetal() + inactive.getResources().getCrystal() + inactive.getResources().getDeuterium()) > this.MINIMAL_RESOURCES)
                 .sorted((i1, i2) -> (i2.getResources().getMetal() + i2.getResources().getCrystal() + i2.getResources().getDeuterium()) - (i1.getResources().getMetal() + i1.getResources().getCrystal() + i1.getResources().getDeuterium()))
                 .collect(Collectors.toList()));
 
@@ -175,16 +179,16 @@ public class AttaquesService {
             CoordinateDto coords = this.inactivesToAttack.get(i).getCoordinate();
             PlanetsResourcesDto resources = this.inactivesToAttack.get(i).getResources();
             Integer totalResources = (3 * (resources.getMetal() + resources.getCrystal() + resources.getDeuterium())) / 4;
-            Integer nbCargo = totalResources / this.cargoStockage +1;
+            Integer nbCargo = totalResources / this.CARGO_STOCKAGE +1;
 
-            ShipsDto ships = this.ogameApiService.getShips(this.autoPlanetId);
+            ShipsDto ships = this.ogameApiService.getShips(this.AUTO_PLANET_ID);
 
-            if (this.cargoId.equals(OgameCst.LARGE_CARGO_ID) && ships.getLargeCargo() >= nbCargo
-                    || this.cargoId.equals(OgameCst.SMALL_CARGO_ID) && ships.getSmallCargo() >= nbCargo) {
+            if (this.CARGO_ID.equals(OgameCst.LARGE_CARGO_ID) && ships.getLargeCargo() >= nbCargo
+                    || this.CARGO_ID.equals(OgameCst.SMALL_CARGO_ID) && ships.getSmallCargo() >= nbCargo) {
 
                 // Attaque
                 MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-                formData.add("ships", this.cargoId + "," + nbCargo);
+                formData.add("ships", this.CARGO_ID + "," + nbCargo);
                 formData.add("mission", OgameCst.ATTACK.toString());
                 formData.add("speed", OgameCst.HUNDRED_PERCENT.toString());
                 formData.add("galaxy", coords.getGalaxy().toString());
@@ -193,14 +197,14 @@ public class AttaquesService {
                 formData.add("metal", "0");
                 formData.add("crystal", "0");
                 formData.add("deuterium", "0");
-                this.ogameApiService.sendFleet(this.autoPlanetId, formData);
+                this.ogameApiService.sendFleet(this.AUTO_PLANET_ID, formData);
 
                 LOGGER.info("Attaque de l'inactif " + coords.getGalaxy() + ":" + coords.getSystem() + ":" + coords.getPosition()
                         + " pour un total de " + totalResources + " ressources");
 
                 slots = this.ogameApiService.getSlots();
 
-                if ((resources.getMetal() + resources.getCrystal() + resources.getDeuterium()) / 4 > this.minimalResources) {
+                if ((resources.getMetal() + resources.getCrystal() + resources.getDeuterium()) / 4 > this.MINIMAL_RESOURCES) {
                     // Cas où il est possible de faire plusieurs vagues
                     resources.setMetal(resources.getMetal() / 4);
                     resources.setCrystal(resources.getCrystal() / 4);

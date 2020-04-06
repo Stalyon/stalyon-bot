@@ -95,7 +95,7 @@ public class ExpeditionService {
                     this.ogameApiService.sendFleet(this.EXPEDITION_DEBRIS_PLANET, formData);
 
                     LOGGER.info("Recyclage du CDR en " + this.EXPEDITION_DEBRIS_GALAXY + ":" + this.EXPEDITION_DEBRIS_SYSTEM
-                            + "16 (Métal = " + galaxyInfos.getExpeditionDebris().getMetal() + ", Cristal = "
+                            + ":16 (Métal = " + galaxyInfos.getExpeditionDebris().getMetal() + ", Cristal = "
                             + galaxyInfos.getExpeditionDebris().getCrystal() + ")");
                 }
             }

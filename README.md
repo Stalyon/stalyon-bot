@@ -19,9 +19,9 @@
   4. sinon, si pas assez d'énergie + niveau max centrale solaire non atteint (paramétrage) + assez de ressources -> lancement de la centrale solaire
   5. sinon, si pas assez d'énergie + niveau max centrale solaire atteint + assez de ressources -> lancement de la centrale de fusion
 - Transport automatique de ressources entre un "cluster" (paramétrage) de planètes / lunes (check toutes les 15 minutes) :
- 1. pour chaque planète qui n'a pas de bâtiment en construction, estimation du temps nécessaire d'économie pour construire le prochain bâtiment
- 2. tri des planètes par rapport à son temps d'économie (du + petit au + grand)
- 3. pour chaque planète, s'il y a assez de ressources sur les autres planètes pour construire ce bâtiment, envoi des ressources vers cette planète
+  1. pour chaque planète qui n'a pas de bâtiment en construction, estimation du temps nécessaire d'économie pour construire le prochain bâtiment
+  2. tri des planètes par rapport à son temps d'économie (du + petit au + grand)
+  3. pour chaque planète, s'il y a assez de ressources sur les autres planètes pour construire ce bâtiment, envoi des ressources vers cette planète
 
 
 ### Pré-requis
@@ -40,9 +40,11 @@
 - Lancement du bot : `mvn spring-boot:run -Dspring-boot.run.profiles=UNIVERSE`
  - Remplacer UNIVERSE par le nom de l'univers en minuscule (exemple : quasar)
 
+
 ### Paramétrages
+
 1. Créer le fichier `application-UNIVERSE.properties` dans src/main/resources (en remplaçant UNIVERSE par le nom de l'univers en minuscule)
 2. Copier / coller dans ce fichier le contenu de src/main/resources/application.properties
 3. Configurer :
- - TODO : à détailler
+   1. TODO : à détailler
 

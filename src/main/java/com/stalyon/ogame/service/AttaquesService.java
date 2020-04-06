@@ -174,8 +174,8 @@ public class AttaquesService {
                 && slots.getInUse() +2 < slots.getTotal() && i < this.inactivesToAttack.size()) {
             CoordinateDto coords = this.inactivesToAttack.get(i).getCoordinate();
             PlanetsResourcesDto resources = this.inactivesToAttack.get(i).getResources();
-            Integer totalResources = (3 * (resources.getMetal() + resources.getCrystal() + resources.getCrystal() + resources.getDeuterium())) / 4;
-            Integer nbCargo = totalResources / this.cargoStockage;
+            Integer totalResources = (3 * (resources.getMetal() + resources.getCrystal() + resources.getDeuterium())) / 4;
+            Integer nbCargo = totalResources / this.cargoStockage +1;
 
             ShipsDto ships = this.ogameApiService.getShips(this.autoPlanetId);
 
@@ -200,7 +200,7 @@ public class AttaquesService {
 
                 slots = this.ogameApiService.getSlots();
 
-                if ((resources.getMetal() + resources.getCrystal() + resources.getCrystal() + resources.getDeuterium()) / 4 > this.minimalResources) {
+                if ((resources.getMetal() + resources.getCrystal() + resources.getDeuterium()) / 4 > this.minimalResources) {
                     // Cas où il est possible de faire plusieurs vagues
                     resources.setMetal(resources.getMetal() / 4);
                     resources.setCrystal(resources.getCrystal() / 4);
@@ -210,6 +210,8 @@ public class AttaquesService {
                     i++;
                 }
                 atLeastOnce = true;
+            } else {
+                i++;
             }
         }
 

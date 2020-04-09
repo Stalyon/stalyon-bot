@@ -10,6 +10,9 @@ public class GalaxyPlanetsDto {
     @JsonProperty("Name")
     private String name;
 
+    @JsonProperty("Activity")
+    private Integer activity;
+
     @JsonProperty("Coordinate")
     private CoordinateDto coordinate;
 
@@ -31,6 +34,9 @@ public class GalaxyPlanetsDto {
     @JsonProperty("Banned")
     private Boolean banned;
 
+    @JsonProperty("Player")
+    private PlayerDto player;
+
     public GalaxyPlanetsDto() {
         // Do nothing
     }
@@ -49,6 +55,14 @@ public class GalaxyPlanetsDto {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Integer getActivity() {
+        return activity;
+    }
+
+    public void setActivity(Integer activity) {
+        this.activity = activity;
     }
 
     public CoordinateDto getCoordinate() {
@@ -105,5 +119,13 @@ public class GalaxyPlanetsDto {
 
     public void setBanned(Boolean banned) {
         this.banned = banned;
+    }
+
+    public PlayerDto getPlayer() {
+        return player;
+    }
+
+    public void setPlayer(PlayerDto player) {
+        this.player = player;
     }
 }

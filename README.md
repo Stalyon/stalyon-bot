@@ -12,6 +12,7 @@
   - classement et nombre de points
   - ressources disponibles par planète / lune
   - niveau des mines et centrales sur les planètes
+  - envoi par mail possible
 - Lancement automatique des constructions liées aux ressources :
   1. si assez d'énergie + assez de ressources -> lancement de la mine de métal
   2. sinon, si assez d'énergie + assez de ressources - > lancement de la mine de cristal
@@ -31,7 +32,15 @@
 - Ogamed API (https://github.com/alaingilbert/ogame/releases)
 
 
-### Installation
+### Paramétrages
+
+1. Créer le fichier `application-UNIVERSE.properties` dans src/main/resources (en remplaçant UNIVERSE par le nom de l'univers en minuscule)
+2. Copier / coller dans ce fichier le contenu de src/main/resources/application.properties
+3. Configurer :
+   1. TODO : à détailler (prévoir assez de GT pour les transports)
+
+
+### Lancement
 
 - Lancement d'Ogamed API : `./ogamed --universe=UNIVERSE --username=MAIL --password=PASSWORD --language=fr`
   - Remplacer UNIVERSE par le nom de l'univers (exemple : Quasar)
@@ -39,12 +48,4 @@
 
 - Lancement du bot : `mvn spring-boot:run -Dspring-boot.run.profiles=UNIVERSE`
   - Remplacer UNIVERSE par le nom de l'univers en minuscule (exemple : quasar)
-
-
-### Paramétrages
-
-1. Créer le fichier `application-UNIVERSE.properties` dans src/main/resources (en remplaçant UNIVERSE par le nom de l'univers en minuscule)
-2. Copier / coller dans ce fichier le contenu de src/main/resources/application.properties
-3. Configurer :
-   1. TODO : à détailler
 

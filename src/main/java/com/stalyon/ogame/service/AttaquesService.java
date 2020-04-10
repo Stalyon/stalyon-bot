@@ -137,9 +137,9 @@ public class AttaquesService {
 
             ShipsDto ships = this.ogameApiService.getShips(this.AUTO_PLANET_ID.get(this.index));
 
-            if (this.CARGO_ID.equals(OgameCst.LARGE_CARGO_ID) && ships.getLargeCargo() >= nbCargo
-                    || this.CARGO_ID.equals(OgameCst.SMALL_CARGO_ID) && ships.getSmallCargo() >= nbCargo
-                    || this.CARGO_ID.equals(OgameCst.ESPIONAGE_PROBE_ID) && ships.getEspionageProbe() >= nbCargo) {
+            if (this.CARGO_ID.equals(OgameCst.LARGE_CARGO_ID) && ships.getLargeCargo() > 0
+                    || this.CARGO_ID.equals(OgameCst.SMALL_CARGO_ID) && ships.getSmallCargo() > 0
+                    || this.CARGO_ID.equals(OgameCst.ESPIONAGE_PROBE_ID) && ships.getEspionageProbe() > 0) {
 
                 // Attaque
                 MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();

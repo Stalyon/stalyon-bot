@@ -2,7 +2,10 @@ package com.stalyon.ogame.service;
 
 import com.stalyon.ogame.OgameApiService;
 import com.stalyon.ogame.constants.OgameCst;
-import com.stalyon.ogame.dto.*;
+import com.stalyon.ogame.dto.CoordinateDto;
+import com.stalyon.ogame.dto.GalaxyInfosDto;
+import com.stalyon.ogame.dto.GalaxyPlanetsDto;
+import com.stalyon.ogame.dto.SlotsDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,8 +47,8 @@ public class SpyService {
     @Value("${spy.sondes.nb}")
     private Integer NB_SONDES;
 
-    @Value("${spy.filter.player.rank.max}")
-    private Integer PLAYER_RANK_MAX;
+    @Value("${spy.filter.player.rank.min}")
+    private Integer PLAYER_RANK_MIN;
 
     @Value("${spy.filter.planet}")
     private Boolean FILTER_PLANET;
@@ -124,14 +127,14 @@ public class SpyService {
     private Boolean planetToSpy(GalaxyPlanetsDto galaxyPlanet) {
         return !galaxyPlanet.getInactive() && !galaxyPlanet.getAdministrator() && !galaxyPlanet.getBanned()
                 && !galaxyPlanet.getNewbie() && !galaxyPlanet.getVacation()
-                && galaxyPlanet.getPlayer().getRank() > this.PLAYER_RANK_MAX
+                && galaxyPlanet.getPlayer().getRank() > this.PLAYER_RANK_MIN
                 && (galaxyPlanet.getActivity().equals(0) || galaxyPlanet.getActivity() > this.LAST_ACTIVITY_MIN);
     }
 
     private Boolean moonToSpy(GalaxyPlanetsDto galaxyPlanet) {
         return !galaxyPlanet.getInactive() && !galaxyPlanet.getAdministrator() && !galaxyPlanet.getBanned()
                 && !galaxyPlanet.getNewbie() && !galaxyPlanet.getVacation()
-                && galaxyPlanet.getPlayer().getRank() > this.PLAYER_RANK_MAX
+                && galaxyPlanet.getPlayer().getRank() > this.PLAYER_RANK_MIN
                 && (galaxyPlanet.getMoon().getActivity().equals(0) || galaxyPlanet.getMoon().getActivity() > this.LAST_ACTIVITY_MIN);
     }
 }

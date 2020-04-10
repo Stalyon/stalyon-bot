@@ -73,7 +73,7 @@ public class ExpeditionService {
             if (galaxyInfos.getExpeditionDebris() != null && galaxyInfos.getExpeditionDebris().getPathfindersNeeded() - pathfinderInWork > 10) {
                 SlotsDto slots = this.ogameApiService.getSlots();
 
-                if (slots.getExpTotal().equals(slots.getExpInUse()) && slots.getInUse() +2 < slots.getTotal()) {
+                if (slots.getExpTotal().equals(slots.getExpInUse()) && slots.getInUse() +1 < slots.getTotal()) {
                     this.sendRecycler(galaxyInfos);
                 }
             }

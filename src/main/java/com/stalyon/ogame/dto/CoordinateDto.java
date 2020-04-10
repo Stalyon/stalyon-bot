@@ -16,6 +16,17 @@ public class CoordinateDto {
     @JsonProperty("Type")
     private Integer type;
 
+    public CoordinateDto() {
+        // Do nothing
+    }
+
+    public CoordinateDto(Integer galaxy, Integer system, Integer position, Integer type) {
+        this.galaxy = galaxy;
+        this.system = system;
+        this.position = position;
+        this.type = type;
+    }
+
     public Integer getGalaxy() {
         return galaxy;
     }

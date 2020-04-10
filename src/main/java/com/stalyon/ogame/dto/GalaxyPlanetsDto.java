@@ -37,6 +37,9 @@ public class GalaxyPlanetsDto {
     @JsonProperty("Player")
     private PlayerDto player;
 
+    @JsonProperty("Moon")
+    private GalaxyMoonDto moon;
+
     public GalaxyPlanetsDto() {
         // Do nothing
     }
@@ -127,5 +130,13 @@ public class GalaxyPlanetsDto {
 
     public void setPlayer(PlayerDto player) {
         this.player = player;
+    }
+
+    public GalaxyMoonDto getMoon() {
+        return moon;
+    }
+
+    public void setMoon(GalaxyMoonDto moon) {
+        this.moon = moon;
     }
 }

@@ -40,6 +40,9 @@ public class GalaxyPlanetsDto {
     @JsonProperty("Moon")
     private GalaxyMoonDto moon;
 
+    @JsonProperty("Alliance")
+    private AllianceDto alliance;
+
     public GalaxyPlanetsDto() {
         // Do nothing
     }
@@ -138,5 +141,13 @@ public class GalaxyPlanetsDto {
 
     public void setMoon(GalaxyMoonDto moon) {
         this.moon = moon;
+    }
+
+    public AllianceDto getAlliance() {
+        return alliance;
+    }
+
+    public void setAlliance(AllianceDto alliance) {
+        this.alliance = alliance;
     }
 }

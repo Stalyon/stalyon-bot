@@ -59,6 +59,9 @@ public class SpyService {
     @Value("${spy.filter.activity.last.min}")
     private Integer LAST_ACTIVITY_MIN;
 
+    @Value("${spy.filter.allys.excluded}")
+    private List<Integer> ALLYS_EXCLUDED;
+
     private List<CoordinateDto> coordsToSpy = new ArrayList<>();
     private int index = 0;
 
@@ -128,6 +131,7 @@ public class SpyService {
         return !galaxyPlanet.getInactive() && !galaxyPlanet.getAdministrator() && !galaxyPlanet.getBanned()
                 && !galaxyPlanet.getNewbie() && !galaxyPlanet.getVacation()
                 && galaxyPlanet.getPlayer().getRank() > this.PLAYER_RANK_MIN
+                && (galaxyPlanet.getAlliance() == null || !this.ALLYS_EXCLUDED.contains(galaxyPlanet.getAlliance().getId()))
                 && (galaxyPlanet.getActivity().equals(0) || galaxyPlanet.getActivity() > this.LAST_ACTIVITY_MIN);
     }
 
@@ -135,6 +139,7 @@ public class SpyService {
         return !galaxyPlanet.getInactive() && !galaxyPlanet.getAdministrator() && !galaxyPlanet.getBanned()
                 && !galaxyPlanet.getNewbie() && !galaxyPlanet.getVacation()
                 && galaxyPlanet.getPlayer().getRank() > this.PLAYER_RANK_MIN
+                && (galaxyPlanet.getAlliance() == null || !this.ALLYS_EXCLUDED.contains(galaxyPlanet.getAlliance().getId()))
                 && (galaxyPlanet.getMoon().getActivity().equals(0) || galaxyPlanet.getMoon().getActivity() > this.LAST_ACTIVITY_MIN);
     }
 }

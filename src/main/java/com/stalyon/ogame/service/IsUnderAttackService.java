@@ -11,6 +11,7 @@ import com.stalyon.ogame.utils.ShipsUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
@@ -25,6 +26,9 @@ public class IsUnderAttackService {
 
     private static Logger LOGGER = LoggerFactory.getLogger(IsUnderAttackService.class);
 
+    @Value("${isunderattack.enemy.vaisseau.min}")
+    private Integer ENEMY_VAISSEAU_MIN;
+
     @Autowired
     private AlertService alertService;
 
@@ -38,7 +42,7 @@ public class IsUnderAttackService {
             List<AttackDto> attacks = this.ogameApiService.getAttacks();
 
             for (AttackDto attack : attacks) {
-                if (ShipsUtils.countAttackShips(attack.getShips()) > 99) {
+                if (ShipsUtils.countAttackShips(attack.getShips()) > this.ENEMY_VAISSEAU_MIN || attack.getShips().getDeathstar() > 0) {
                     LOGGER.info("/!\\ /!\\ /!\\ Alerte générale ! (Attaque de " + attack.getAttackerName() + ") /!\\ /!\\ /!\\");
 
                     this.alertService.runAlarm();

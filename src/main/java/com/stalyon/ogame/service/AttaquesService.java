@@ -49,6 +49,9 @@ public class AttaquesService {
     @Value("${attaques.auto.minimal.resources}")
     private Integer MINIMAL_RESOURCES;
 
+    @Value("${attaques.auto.spy.sondes.nb}")
+    private Integer NB_SONDES;
+
     @Autowired
     private OgameApiService ogameApiService;
 
@@ -198,7 +201,7 @@ public class AttaquesService {
             if (this.attackedInactives.stream().noneMatch(c -> this.sameCoords(c, coords))) {
                 // Espionnage
                 MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-                formData.add("ships", OgameCst.ESPIONAGE_PROBE_ID + "," + "8");
+                formData.add("ships", OgameCst.ESPIONAGE_PROBE_ID + "," + this.NB_SONDES);
                 formData.add("mission", OgameCst.SPY.toString());
                 formData.add("speed", OgameCst.HUNDRED_PERCENT.toString());
                 formData.add("galaxy", coords.getGalaxy().toString());

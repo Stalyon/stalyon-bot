@@ -99,6 +99,11 @@ public class AttaquesService {
         this.inactivesToSpy = inactivesPlanets;
         this.isInUse = Boolean.FALSE;
         LOGGER.info("Fin du scan. Planètes inactives trouvées : " + this.inactivesToSpy.size());
+
+        if (this.inactivesToSpy.isEmpty()) {
+            // Si aucun inactif n'a été trouvé, scan suivant
+            this.scanSystems();
+        }
     }
 
     @Scheduled(cron = "0/30 * * * * *") // every 30-seconds

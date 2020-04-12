@@ -287,7 +287,8 @@ public class MinesService {
                             crystalMissing = crystalMissing - crystalToSend;
                             deutMissing = deutMissing - deutToSend;
                         } else {
-                            LOGGER.info("Impossible d'envoyer les ressources, pas de GT disponibles");
+                            LOGGER.info("Impossible d'envoyer les ressources depuis " + p.getPlanet().getName()
+                                    + ", pas de GT disponibles");
                         }
                     }
 

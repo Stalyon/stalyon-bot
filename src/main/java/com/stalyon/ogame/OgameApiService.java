@@ -2,6 +2,8 @@ package com.stalyon.ogame;
 
 import com.stalyon.ogame.dto.*;
 import com.stalyon.ogame.dto.reponse.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -15,9 +17,13 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class OgameApiService {
+
+    private static Logger LOGGER = LoggerFactory.getLogger(OgameApiService.class);
     
     @Value("${bot.url}")
     private String BOT_ULR;
@@ -130,8 +136,18 @@ public class OgameApiService {
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(formData, headers);
 
-        restTemplate.postForEntity(this.BOT_ULR + "/planets/" + destinationId + "/build/building/" + buildingId,
-                request, SendFleetResponseDto.class);
+        try {
+            restTemplate.postForEntity(this.BOT_ULR + "/planets/" + destinationId + "/build/building/" + buildingId,
+                    request, SendFleetResponseDto.class);
+        } catch (Exception e) {
+            Pattern pattern = Pattern.compile("\"Message\":\"(.*)\",\"Result");
+            Matcher matcher = pattern.matcher(e.getMessage());
+            if (matcher.find()) {
+                LOGGER.error("Erreur lors de la construction d'un bâtiment : " + matcher.group(1));
+            } else {
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
     }
 
     public void sendFleet(Integer destinationId, MultiValueMap<String, String> formData) {
@@ -139,8 +155,17 @@ public class OgameApiService {
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(formData, headers);
-
-        restTemplate.postForEntity(this.BOT_ULR + "/planets/" + destinationId + "/send-fleet",
-                request, SendFleetResponseDto.class);
+        try {
+            restTemplate.postForEntity(this.BOT_ULR + "/planets/" + destinationId + "/send-fleet",
+                    request, SendFleetResponseDto.class);
+        } catch (Exception e) {
+            Pattern pattern = Pattern.compile("\"Message\":\"(.*)\",\"Result");
+            Matcher matcher = pattern.matcher(e.getMessage());
+            if (matcher.find()) {
+                LOGGER.error("Erreur lors d'un envoi de flotte : " + matcher.group(1));
+            } else {
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
     }
 }

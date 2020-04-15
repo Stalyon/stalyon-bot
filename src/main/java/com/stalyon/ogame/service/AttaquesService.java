@@ -3,6 +3,7 @@ package com.stalyon.ogame.service;
 import com.stalyon.ogame.OgameApiService;
 import com.stalyon.ogame.constants.OgameCst;
 import com.stalyon.ogame.dto.*;
+import com.stalyon.ogame.utils.SlotsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,6 +55,9 @@ public class AttaquesService {
 
     @Autowired
     private OgameApiService ogameApiService;
+
+    @Autowired
+    private SlotsService slotsService;
 
     private int index = -1;
     private List<InactivePlanetsDto> inactivesToSpy = new ArrayList<>();
@@ -132,12 +136,10 @@ public class AttaquesService {
     private void attackInactives() {
         LOGGER.info("Inactifs dans la liste d'attaque : " + this.inactivesToAttack.size());
 
-        SlotsDto slots = this.ogameApiService.getSlots();
-
         int i = 0;
         boolean atLeastOnce = false;
-        while (!this.inactivesToAttack.isEmpty() && slots.getExpTotal().equals(slots.getExpInUse())
-                && slots.getInUse() +2 < slots.getTotal() && i < this.inactivesToAttack.size()) {
+        while (!this.inactivesToAttack.isEmpty() && this.slotsService.hasEnoughFreeSlots(2)
+                && i < this.inactivesToAttack.size()) {
             CoordinateDto coords = this.inactivesToAttack.get(i).getCoordinate();
             PlanetsResourcesDto resources = this.inactivesToAttack.get(i).getResources();
             Integer totalResources = (3 * (resources.getMetal() + resources.getCrystal() + resources.getDeuterium())) / 4;
@@ -168,7 +170,6 @@ public class AttaquesService {
                 if (this.attackedInactives.stream().noneMatch(c -> this.sameCoords(c, coords))) {
                     this.attackedInactives.add(coords);
                 }
-                slots = this.ogameApiService.getSlots();
 
                 if ((resources.getMetal() + resources.getCrystal() + resources.getDeuterium()) / 4 > this.MINIMAL_RESOURCES) {
                     // Cas où il est possible de faire plusieurs vagues
@@ -194,13 +195,12 @@ public class AttaquesService {
 
     private void spyInactives() {
         this.updateAttackedInactives();
-        SlotsDto slots = this.ogameApiService.getSlots();
 
         int i = 0;
         int skipped = 0;
         boolean atLeastOnce = false;
-        while (!this.inactivesToSpy.isEmpty() && slots.getExpTotal().equals(slots.getExpInUse())
-                && slots.getInUse() +2 < slots.getTotal() && i < this.inactivesToSpy.size()) {
+        while (!this.inactivesToSpy.isEmpty() && this.slotsService.hasEnoughFreeSlots(2)
+                && i < this.inactivesToSpy.size()) {
             CoordinateDto coords = this.inactivesToSpy.get(i).getCoordinate();
 
             if (this.attackedInactives.stream().noneMatch(c -> this.sameCoords(c, coords))) {
@@ -217,7 +217,6 @@ public class AttaquesService {
                 formData.add("deuterium", "0");
                 this.ogameApiService.sendFleet(this.AUTO_PLANET_ID.get(this.index), formData);
 
-                slots = this.ogameApiService.getSlots();
                 atLeastOnce = true;
             } else {
                 skipped++;

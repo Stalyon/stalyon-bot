@@ -7,6 +7,7 @@ import com.stalyon.ogame.dto.GalaxyInfosDto;
 import com.stalyon.ogame.dto.ShipsDto;
 import com.stalyon.ogame.dto.SlotsDto;
 import com.stalyon.ogame.utils.ShipsUtils;
+import com.stalyon.ogame.utils.SlotsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +44,9 @@ public class ExpeditionService {
     @Autowired
     private ShipsUtils shipsUtils;
 
+    @Autowired
+    private SlotsService slotsService;
+
     @Scheduled(cron = "40 * * * * *") // every minute
     public void launchExpedition() {
         SlotsDto slots = this.ogameApiService.getSlots();
@@ -71,9 +75,7 @@ public class ExpeditionService {
                     .reduce(0, Integer::sum);
 
             if (galaxyInfos.getExpeditionDebris() != null && galaxyInfos.getExpeditionDebris().getPathfindersNeeded() - pathfinderInWork > 10) {
-                SlotsDto slots = this.ogameApiService.getSlots();
-
-                if (slots.getExpTotal().equals(slots.getExpInUse()) && slots.getInUse() +1 < slots.getTotal()) {
+                if (this.slotsService.hasEnoughFreeSlots(1)) {
                     this.sendRecycler(galaxyInfos);
                 }
             }

@@ -6,6 +6,7 @@ import com.stalyon.ogame.dto.CoordinateDto;
 import com.stalyon.ogame.dto.GalaxyInfosDto;
 import com.stalyon.ogame.dto.GalaxyPlanetsDto;
 import com.stalyon.ogame.dto.SlotsDto;
+import com.stalyon.ogame.utils.SlotsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,9 +29,6 @@ import java.util.stream.Collectors;
 public class SpyService {
 
     private static Logger LOGGER = LoggerFactory.getLogger(AttaquesService.class);
-
-    @Autowired
-    private OgameApiService ogameApiService;
 
     @Value("${spy.coord.galaxy}")
     private Integer COORD_GALAXY;
@@ -61,6 +59,12 @@ public class SpyService {
 
     @Value("${spy.filter.allys.excluded}")
     private List<Integer> ALLYS_EXCLUDED;
+
+    @Autowired
+    private OgameApiService ogameApiService;
+
+    @Autowired
+    private SlotsService slotsService;
 
     private List<CoordinateDto> coordsToSpy = new ArrayList<>();
     private int index = 0;
@@ -100,10 +104,9 @@ public class SpyService {
     @Scheduled(cron = "0/10 * * * * *") // every minute
     public void spy() {
         if (!this.coordsToSpy.isEmpty()) {
-            SlotsDto slots = this.ogameApiService.getSlots();
 
-            while (!this.coordsToSpy.isEmpty() && slots.getExpTotal().equals(slots.getExpInUse())
-                    && slots.getInUse() + 1 < slots.getTotal() && this.index < this.coordsToSpy.size()) {
+            while (!this.coordsToSpy.isEmpty() && this.slotsService.hasEnoughFreeSlots(1)
+                    && this.index < this.coordsToSpy.size()) {
                 CoordinateDto coords = this.coordsToSpy.get(this.index);
 
                 // Espionnage
@@ -121,7 +124,6 @@ public class SpyService {
                 this.ogameApiService.sendFleet(this.PLANET_ID, formData);
                 LOGGER.info("Espionnage de " + coords.getGalaxy() + ":" + coords.getSystem() + ":" + coords.getPosition());
 
-                slots = this.ogameApiService.getSlots();
                 this.index++;
             }
         }

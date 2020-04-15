@@ -4,6 +4,7 @@ import com.stalyon.ogame.OgameApiService;
 import com.stalyon.ogame.constants.OgameCst;
 import com.stalyon.ogame.dto.*;
 import com.stalyon.ogame.utils.ResourcesBuildingsUtils;
+import com.stalyon.ogame.utils.SlotsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +64,9 @@ public class MinesService {
 
     @Autowired
     private OgameApiService ogameApiService;
+
+    @Autowired
+    private SlotsService slotsService;
 
     @Scheduled(cron = "0 0/2 * * * *") // every minute
     public void autoBuild() {
@@ -252,11 +256,11 @@ public class MinesService {
                 metalMissing = metalMissing < 0 ? 0 : metalMissing;
                 crystalMissing = crystalMissing < 0 ? 0 : crystalMissing;
                 deutMissing = deutMissing < 0 ? 0 : deutMissing;
-                SlotsDto slots = this.ogameApiService.getSlots();
 
                 int i = 0;
-                while ((metalMissing > 0 || crystalMissing > 0 || deutMissing > 0) && slots.getExpTotal().equals(slots.getExpInUse())
-                        && slots.getInUse() +2 < slots.getTotal() && i < sorted.size()) {
+                while ((metalMissing > 0 || crystalMissing > 0 || deutMissing > 0)
+                        && this.slotsService.hasEnoughFreeSlots(2)
+                        && i < sorted.size()) {
                     PlanetClusterizedHelperDto p = sorted.get(i);
                     Integer metalToSend = metalMissing > p.getResources().getMetal() ? p.getResources().getMetal() : metalMissing;
                     Integer crystalToSend = crystalMissing > p.getResources().getCrystal() ? p.getResources().getCrystal() : crystalMissing;
@@ -304,7 +308,6 @@ public class MinesService {
                         this.waittingClusterizedPlanets.add(pc.getPlanet().getId());
                     }
 
-                    slots = this.ogameApiService.getSlots();
                     i++;
                 }
             });

@@ -5,9 +5,9 @@
   - envoi par mail possible
 - Sauvetage de flotte si sous attaque (check toutes les minutes) :
   - si la flotte d'attaque est composée d'au moins 100 vaisseaux d'attaques, et a lieu dans moins de 4 minutes, la flotte et les ressources de la planète / lune attaquée sont envoyées vers le CDR à 20%
-- Renvoi des flottes d'expédition (check toutes les minutes) :
-  - les flottes d'expédition qui rentrent sont renvoyées au même endroit (1 faucheur + les PT / GT / éclaireurs)
-- Recyclage des CDR en position 16 (check toutes les 15 minutes)
+- Envoi automatique des flottes d'expédition (check toutes les minutes) :
+  - paramétrage des vaisseaux à envoyer et de la destination
+- Recyclage du CDR en position 16 (check toutes les 5 minutes)
 - Génération d'informations sur le compte (toutes les 2 heures) :
   - classement et nombre de points
   - ressources disponibles par planète / lune
@@ -23,6 +23,7 @@
   1. pour chaque planète qui n'a pas de bâtiment en construction, estimation du temps nécessaire d'économie pour construire le prochain bâtiment
   2. tri des planètes par rapport à son temps d'économie (du + petit au + grand)
   3. pour chaque planète, s'il y a assez de ressources sur les autres planètes pour construire ce bâtiment, envoi des ressources vers cette planète
+- Vol automatique des CDR en position 16 (check toutes les 15 minutes) :
 
 
 ### Pré-requis

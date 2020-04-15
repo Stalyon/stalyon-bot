@@ -74,10 +74,10 @@ public class ExpeditionService {
                     .map(ShipsDto::getPathfinder)
                     .reduce(0, Integer::sum);
 
-            if (galaxyInfos.getExpeditionDebris() != null && galaxyInfos.getExpeditionDebris().getPathfindersNeeded() - pathfinderInWork > 10) {
-                if (this.slotsService.hasEnoughFreeSlots(1)) {
-                    this.sendRecycler(galaxyInfos);
-                }
+            if (galaxyInfos.getExpeditionDebris() != null
+                    && galaxyInfos.getExpeditionDebris().getPathfindersNeeded() - pathfinderInWork > 10
+                    && this.slotsService.hasEnoughFreeSlots(1)) {
+                this.sendRecycler(galaxyInfos);
             }
         }
     }

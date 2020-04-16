@@ -58,7 +58,7 @@ public class ExpeditionService {
         }
     }
 
-    @Scheduled(cron = "10 1/5 * * * *") // every 5-minutes
+    @Scheduled(cron = "10 1/3 * * * *") // every 3-minutes
     public void checkExpeditionDebris() {
         if (this.EXPEDITION_DEBRIS_CHECK) {
             GalaxyInfosDto galaxyInfos = this.ogameApiService.getGalaxyInfos(this.EXPEDITION_GALAXY, this.EXPEDITION_SYSTEM);

@@ -51,7 +51,7 @@ public class ExpeDebrisTheftService {
     @Autowired
     private SlotsService slotsService;
 
-    @Scheduled(cron = "50 2/5 * * * *") // every 5-minutes
+    @Scheduled(cron = "50 0/3 * * * *") // every 3-minutes
     public void checkExpeditionDebris() {
         if (this.AUTO_EXPE_DEBRIS_THEFT) {
             for (int i = 0; i < this.PLANET_ID.size(); i++) {
@@ -100,6 +100,10 @@ public class ExpeDebrisTheftService {
                         + ":16 (Métal = " + galaxyInfos.getExpeditionDebris().getMetal() + ", Cristal = "
                         + galaxyInfos.getExpeditionDebris().getCrystal() + ")");
             }
+        } else {
+            LOGGER.info("Pas d'éclaireurs (ou slots) dispos pour le CDR en " + galaxyInfos.getGalaxy() + ":" + galaxyInfos.getSystem()
+                    + ":16 (Métal = " + galaxyInfos.getExpeditionDebris().getMetal() + ", Cristal = "
+                    + galaxyInfos.getExpeditionDebris().getCrystal() + ")");
         }
     }
 }

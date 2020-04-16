@@ -5,7 +5,6 @@ import com.stalyon.ogame.constants.OgameCst;
 import com.stalyon.ogame.dto.FleetDto;
 import com.stalyon.ogame.dto.GalaxyInfosDto;
 import com.stalyon.ogame.dto.ShipsDto;
-import com.stalyon.ogame.dto.SlotsDto;
 import com.stalyon.ogame.utils.SlotsService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

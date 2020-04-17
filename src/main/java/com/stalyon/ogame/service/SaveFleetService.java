@@ -2,8 +2,7 @@ package com.stalyon.ogame.service;
 
 import com.stalyon.ogame.OgameApiService;
 import com.stalyon.ogame.constants.OgameCst;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.stalyon.ogame.utils.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -15,10 +14,11 @@ import org.springframework.util.MultiValueMap;
 @Profile("saveFleet")
 public class SaveFleetService {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(SaveFleetService.class);
-
     @Autowired
     private OgameApiService ogameApiService;
+
+    @Autowired
+    private MessageService messageService;
 
     @Scheduled(cron = "30 14 13 * * *")
     public void saveFleet() {
@@ -34,6 +34,6 @@ public class SaveFleetService {
         formData.add("deuterium", "0");
         this.ogameApiService.sendFleet(33630004, formData);
 
-        LOGGER.info("Flotte envoyée");
+        this.messageService.logInfo("Flotte envoyée", Boolean.FALSE, Boolean.FALSE);
     }
 }

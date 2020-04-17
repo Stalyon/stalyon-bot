@@ -3,9 +3,7 @@ package com.stalyon.ogame.service;
 import com.stalyon.ogame.OgameApiService;
 import com.stalyon.ogame.constants.OgameCst;
 import com.stalyon.ogame.dto.*;
-import com.stalyon.ogame.utils.AlertService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.stalyon.ogame.utils.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -16,13 +14,11 @@ import java.util.List;
 @Service
 public class InfoCompteService {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(InfoCompteService.class);
-
     @Autowired
     private OgameApiService ogameApiService;
 
     @Autowired
-    private AlertService alertService;
+    private MessageService messageService;
 
     @Scheduled(cron = "30 0 0/2 * * *") // every 2-hours
     public void infoCompte() {
@@ -61,11 +57,10 @@ public class InfoCompteService {
         long nbAttack = fleets.stream().filter(f -> f.getMission().equals(OgameCst.ATTACK) || f.getMission().equals(OgameCst.GROUPED_ATTACK)).count();
         long nbTransport = fleets.stream().filter(f -> f.getMission().equals(OgameCst.TRANSPORT)).count();
         long nbExpe = fleets.stream().filter(f -> f.getMission().equals(OgameCst.EXPEDITION)).count();
-        content.add("  --> Nombre de flottes : " + fleets.size() + " - Attaques : " +  nbAttack
+        content.add("  --> Nombre de flottes : " + fleets.size() + " - Attaques : " + nbAttack
                 + " - Transports : " + nbTransport + " Expéditions : " + nbExpe);
         content.add("------");
 
-        content.forEach(LOGGER::info);
-        this.alertService.sendMail(String.join("\n", content));
+        messageService.logInfo(String.join("\n", content), Boolean.FALSE, Boolean.TRUE);
     }
 }

@@ -1,15 +1,14 @@
 package com.stalyon.ogame.service;
 
 import com.stalyon.ogame.OgameApiService;
+import com.stalyon.ogame.config.OgameProperties;
 import com.stalyon.ogame.constants.OgameCst;
 import com.stalyon.ogame.dto.CoordinateDto;
 import com.stalyon.ogame.dto.GalaxyInfosDto;
 import com.stalyon.ogame.dto.GalaxyPlanetsDto;
+import com.stalyon.ogame.utils.MessageService;
 import com.stalyon.ogame.utils.SlotsService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
@@ -27,40 +26,14 @@ import java.util.stream.Collectors;
 @Profile("spy")
 public class SpyService {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(AttaquesService.class);
-
-    @Value("${spy.coord.galaxy}")
-    private Integer COORD_GALAXY;
-
-    @Value("${spy.coord.system.min}")
-    private Integer COORD_SYSTEM_MIN;
-
-    @Value("${spy.coord.system.max}")
-    private Integer COORD_SYSTEM_MAX;
-
-    @Value("${spy.planet}")
-    private Integer PLANET_ID;
-
-    @Value("${spy.sondes.nb}")
-    private Integer NB_SONDES;
-
-    @Value("${spy.filter.player.rank.min}")
-    private Integer PLAYER_RANK_MIN;
-
-    @Value("${spy.filter.planet}")
-    private Boolean FILTER_PLANET;
-
-    @Value("${spy.filter.moon}")
-    private Boolean FILTER_MOON;
-
-    @Value("${spy.filter.activity.last.min}")
-    private Integer LAST_ACTIVITY_MIN;
-
-    @Value("${spy.filter.allys.excluded}")
-    private List<Integer> ALLYS_EXCLUDED;
-
     @Autowired
     private OgameApiService ogameApiService;
+
+    @Autowired
+    private OgameProperties ogameProperties;
+
+    @Autowired
+    private MessageService messageService;
 
     @Autowired
     private SlotsService slotsService;
@@ -70,10 +43,10 @@ public class SpyService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void scan() {
-        for (int i = this.COORD_SYSTEM_MIN; i < this.COORD_SYSTEM_MAX; i++) {
-            GalaxyInfosDto galaxyInfos = this.ogameApiService.getGalaxyInfos(this.COORD_GALAXY, i);
+        for (int i = this.ogameProperties.SPY_COORD_SYSTEM_MIN; i < this.ogameProperties.SPY_COORD_SYSTEM_MAX; i++) {
+            GalaxyInfosDto galaxyInfos = this.ogameApiService.getGalaxyInfos(this.ogameProperties.SPY_COORD_GALAXY, i);
 
-            if (this.FILTER_PLANET) {
+            if (this.ogameProperties.SPY_FILTER_PLANET) {
                 this.coordsToSpy.addAll(
                         galaxyInfos.getPlanets()
                                 .stream()
@@ -85,7 +58,7 @@ public class SpyService {
                 );
             }
 
-            if (this.FILTER_MOON) {
+            if (this.ogameProperties.SPY_FILTER_MOON) {
                 this.coordsToSpy.addAll(
                         galaxyInfos.getPlanets()
                                 .stream()
@@ -110,7 +83,7 @@ public class SpyService {
 
                 // Espionnage
                 MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-                formData.add("ships", OgameCst.ESPIONAGE_PROBE_ID + "," + this.NB_SONDES);
+                formData.add("ships", OgameCst.ESPIONAGE_PROBE_ID + "," + this.ogameProperties.SPY_NB_SONDES);
                 formData.add("mission", OgameCst.SPY.toString());
                 formData.add("speed", OgameCst.HUNDRED_PERCENT.toString());
                 formData.add("galaxy", coords.getGalaxy().toString());
@@ -120,8 +93,8 @@ public class SpyService {
                 formData.add("metal", "0");
                 formData.add("crystal", "0");
                 formData.add("deuterium", "0");
-                this.ogameApiService.sendFleet(this.PLANET_ID, formData);
-                LOGGER.info("Espionnage de " + coords.getGalaxy() + ":" + coords.getSystem() + ":" + coords.getPosition());
+                this.ogameApiService.sendFleet(this.ogameProperties.SPY_PLANET_ID, formData);
+                this.messageService.logInfo("Espionnage de " + coords.getGalaxy() + ":" + coords.getSystem() + ":" + coords.getPosition(), Boolean.FALSE, Boolean.FALSE);
 
                 this.index++;
             }
@@ -131,16 +104,16 @@ public class SpyService {
     private Boolean planetToSpy(GalaxyPlanetsDto galaxyPlanet) {
         return !galaxyPlanet.getInactive() && !galaxyPlanet.getAdministrator() && !galaxyPlanet.getBanned()
                 && !galaxyPlanet.getNewbie() && !galaxyPlanet.getVacation()
-                && galaxyPlanet.getPlayer().getRank() > this.PLAYER_RANK_MIN
-                && (galaxyPlanet.getAlliance() == null || !this.ALLYS_EXCLUDED.contains(galaxyPlanet.getAlliance().getId()))
-                && (galaxyPlanet.getActivity().equals(0) || galaxyPlanet.getActivity() > this.LAST_ACTIVITY_MIN);
+                && galaxyPlanet.getPlayer().getRank() > this.ogameProperties.SPY_PLAYER_RANK_MIN
+                && (galaxyPlanet.getAlliance() == null || !this.ogameProperties.SPY_ALLYS_EXCLUDED.contains(galaxyPlanet.getAlliance().getId()))
+                && (galaxyPlanet.getActivity().equals(0) || galaxyPlanet.getActivity() > this.ogameProperties.SPY_LAST_ACTIVITY_MIN);
     }
 
     private Boolean moonToSpy(GalaxyPlanetsDto galaxyPlanet) {
         return !galaxyPlanet.getInactive() && !galaxyPlanet.getAdministrator() && !galaxyPlanet.getBanned()
                 && !galaxyPlanet.getNewbie() && !galaxyPlanet.getVacation()
-                && galaxyPlanet.getPlayer().getRank() > this.PLAYER_RANK_MIN
-                && (galaxyPlanet.getAlliance() == null || !this.ALLYS_EXCLUDED.contains(galaxyPlanet.getAlliance().getId()))
-                && (galaxyPlanet.getMoon().getActivity().equals(0) || galaxyPlanet.getMoon().getActivity() > this.LAST_ACTIVITY_MIN);
+                && galaxyPlanet.getPlayer().getRank() > this.ogameProperties.SPY_PLAYER_RANK_MIN
+                && (galaxyPlanet.getAlliance() == null || !this.ogameProperties.SPY_ALLYS_EXCLUDED.contains(galaxyPlanet.getAlliance().getId()))
+                && (galaxyPlanet.getMoon().getActivity().equals(0) || galaxyPlanet.getMoon().getActivity() > this.ogameProperties.SPY_LAST_ACTIVITY_MIN);
     }
 }

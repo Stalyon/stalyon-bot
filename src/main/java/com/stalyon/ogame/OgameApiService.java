@@ -1,10 +1,11 @@
 package com.stalyon.ogame;
 
+import com.stalyon.ogame.config.OgameProperties;
 import com.stalyon.ogame.dto.*;
 import com.stalyon.ogame.dto.reponse.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpEntity;
@@ -24,9 +25,9 @@ import java.util.regex.Pattern;
 public class OgameApiService {
 
     private static Logger LOGGER = LoggerFactory.getLogger(OgameApiService.class);
-    
-    @Value("${bot.url}")
-    private String BOT_ULR;
+
+    @Autowired
+    private OgameProperties ogameProperties;
 
     private RestTemplate restTemplate;
 
@@ -37,28 +38,28 @@ public class OgameApiService {
 
     public Boolean isUnderAttack() {
         ResponseEntity<IsUnderAttackResponseDto> response = this.restTemplate.getForEntity(
-                this.BOT_ULR + "/is-under-attack", IsUnderAttackResponseDto.class);
+                this.ogameProperties.BOT_URL + "/is-under-attack", IsUnderAttackResponseDto.class);
 
         return response.getBody().getResult();
     }
 
     public SlotsDto getSlots() {
         ResponseEntity<SlotsResponseDto> response = this.restTemplate.getForEntity(
-                this.BOT_ULR + "/fleets/slots", SlotsResponseDto.class);
+                this.ogameProperties.BOT_URL + "/fleets/slots", SlotsResponseDto.class);
 
         return response.getBody().getResult();
     }
 
     public GalaxyInfosDto getGalaxyInfos(Integer galaxy, Integer system) {
         ResponseEntity<GalaxyInfosResponseDto> response = this.restTemplate.getForEntity(
-                this.BOT_ULR + "/galaxy-infos/" + galaxy + "/" + system, GalaxyInfosResponseDto.class);
+                this.ogameProperties.BOT_URL + "/galaxy-infos/" + galaxy + "/" + system, GalaxyInfosResponseDto.class);
 
         return response.getBody().getResult();
     }
 
     public List<FleetDto> getFleets() {
         ResponseEntity<FleetsResponseDto> response = restTemplate.getForEntity(
-                this.BOT_ULR + "/fleets", FleetsResponseDto.class);
+                this.ogameProperties.BOT_URL + "/fleets", FleetsResponseDto.class);
 
         return response.getBody().getResult();
     }
@@ -66,21 +67,21 @@ public class OgameApiService {
     public PlanetDto getPlanet(Integer galaxy, Integer system, Integer position) {
         String coordinate = "" + galaxy + "/" + system + "/" + position;
         ResponseEntity<PlanetsPlanetResponseDto> response = restTemplate.getForEntity(
-                this.BOT_ULR + "/planets/" + coordinate, PlanetsPlanetResponseDto.class);
+                this.ogameProperties.BOT_URL + "/planets/" + coordinate, PlanetsPlanetResponseDto.class);
 
         return response.getBody().getResult();
     }
 
     public List<PlanetDto> getPlanets() {
         ResponseEntity<PlanetsResponseDto> response = restTemplate.getForEntity(
-                this.BOT_ULR + "/planets", PlanetsResponseDto.class);
+                this.ogameProperties.BOT_URL + "/planets", PlanetsResponseDto.class);
 
         return response.getBody().getResult();
     }
 
     public PlanetsResourcesBuildingsDto getPlanetsResourcesBuildings(PlanetDto planetDto) {
         ResponseEntity<PlanetsResourcesBuildingsResponseDto> response = restTemplate.getForEntity(
-                this.BOT_ULR + "/planets/" + planetDto.getId()
+                this.ogameProperties.BOT_URL + "/planets/" + planetDto.getId()
                         + "/resources-buildings", PlanetsResourcesBuildingsResponseDto.class);
 
         return response.getBody().getResult();
@@ -88,7 +89,7 @@ public class OgameApiService {
 
     public PlanetsResourcesDto getPlanetsResources(PlanetDto planetDto) {
         ResponseEntity<PlanetsResourcesResponseDto> response = restTemplate.getForEntity(
-                this.BOT_ULR + "/planets/" + planetDto.getId()
+                this.ogameProperties.BOT_URL + "/planets/" + planetDto.getId()
                         + "/resources", PlanetsResourcesResponseDto.class);
 
         return response.getBody().getResult();
@@ -96,7 +97,7 @@ public class OgameApiService {
 
     public PlanetsConstructionsDto getPlanetsConstructions(PlanetDto planetDto) {
         ResponseEntity<PlanetsConstructionsResponseDto> response = restTemplate.getForEntity(
-                this.BOT_ULR + "/planets/" + planetDto.getId()
+                this.ogameProperties.BOT_URL + "/planets/" + planetDto.getId()
                         + "/constructions", PlanetsConstructionsResponseDto.class);
 
         return response.getBody().getResult();
@@ -104,28 +105,28 @@ public class OgameApiService {
 
     public UserInfosDto getUserInfos() {
         ResponseEntity<UserInfosResponseDto> response = restTemplate.getForEntity(
-                this.BOT_ULR + "/user-infos", UserInfosResponseDto.class);
+                this.ogameProperties.BOT_URL + "/user-infos", UserInfosResponseDto.class);
 
         return response.getBody().getResult();
     }
 
     public EspionageReportDto getEspionageReport(Integer galaxy, Integer system, Integer position) throws HttpServerErrorException {
         ResponseEntity<EspionageReportResponseDto> response = restTemplate.getForEntity(
-                this.BOT_ULR + "/espionage-report/" + galaxy + "/" + system + "/" + position, EspionageReportResponseDto.class);
+                this.ogameProperties.BOT_URL + "/espionage-report/" + galaxy + "/" + system + "/" + position, EspionageReportResponseDto.class);
 
         return response.getBody().getResult();
     }
 
     public ShipsDto getShips(Integer planetId) {
         ResponseEntity<PlanetsShipsResponseDto> response = restTemplate.getForEntity(
-                this.BOT_ULR + "/planets/" + planetId + "/ships", PlanetsShipsResponseDto.class);
+                this.ogameProperties.BOT_URL + "/planets/" + planetId + "/ships", PlanetsShipsResponseDto.class);
 
         return response.getBody().getResult();
     }
 
     public List<AttackDto> getAttacks() {
         ResponseEntity<AttacksResponseDto> response = restTemplate.getForEntity(
-                this.BOT_ULR + "/attacks", AttacksResponseDto.class);
+                this.ogameProperties.BOT_URL + "/attacks", AttacksResponseDto.class);
 
         return response.getBody().getResult();
     }
@@ -137,7 +138,7 @@ public class OgameApiService {
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(formData, headers);
 
         try {
-            restTemplate.postForEntity(this.BOT_ULR + "/planets/" + destinationId + "/build/building/" + buildingId,
+            restTemplate.postForEntity(this.ogameProperties.BOT_URL + "/planets/" + destinationId + "/build/building/" + buildingId,
                     request, SendFleetResponseDto.class);
         } catch (Exception e) {
             Pattern pattern = Pattern.compile("\"Message\":\"(.*)\",\"Result");
@@ -156,7 +157,7 @@ public class OgameApiService {
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(formData, headers);
         try {
-            restTemplate.postForEntity(this.BOT_ULR + "/planets/" + destinationId + "/send-fleet",
+            restTemplate.postForEntity(this.ogameProperties.BOT_URL + "/planets/" + destinationId + "/send-fleet",
                     request, SendFleetResponseDto.class);
         } catch (Exception e) {
             Pattern pattern = Pattern.compile("\"Message\":\"(.*)\",\"Result");

@@ -13,15 +13,15 @@ public class ResourcesBuildingsUtils {
     }
 
     public static Integer getEcoTime(PlanetsResourcesDto cost, PlanetsResourcesBuildingsDto resourcesBuildings, PlanetsResourcesDto resources,
-                                              Integer serverSpeed, Boolean hasGeologue) {
+                                     Integer serverSpeed, Boolean hasGeologue) {
         Integer totalMetal = cost.getMetal() - resources.getMetal();
         Integer totalCrystal = cost.getCrystal() - resources.getCrystal();
         Integer totalDeut = cost.getDeuterium() - resources.getDeuterium();
-        
+
         Integer metalEcoTime = 0;
         Integer crystalEcoTime = 0;
         Integer deutEcoTime = 0;
-        
+
         if (totalMetal > 0) {
             metalEcoTime = (int) Math.round((double) totalMetal / (double) ResourcesBuildingsUtils.calculateMetalMineProduction(resourcesBuildings.getMetalMine(),
                     serverSpeed, hasGeologue) * 60.);
@@ -34,7 +34,7 @@ public class ResourcesBuildingsUtils {
             deutEcoTime = (int) Math.round((double) totalDeut / (double) ResourcesBuildingsUtils.calculateSyntheDeutProduction(resourcesBuildings.getDeuteriumSynthesizer(),
                     serverSpeed, hasGeologue) * 60.);
         }
-        
+
         return Math.max(metalEcoTime, Math.max(crystalEcoTime, deutEcoTime));
     }
 
@@ -89,7 +89,7 @@ public class ResourcesBuildingsUtils {
                 (int) Math.round(15 * Math.pow(1.5, metalMine - 1)),
                 0,
                 (int) Math.round(10 * metalMine * Math.pow(1.1, metalMine))
-                        - (int) Math.round(10 * (metalMine -1) * Math.pow(1.1, (metalMine -1)))
+                        - (int) Math.round(10 * (metalMine - 1) * Math.pow(1.1, (metalMine - 1)))
         );
     }
 
@@ -99,7 +99,7 @@ public class ResourcesBuildingsUtils {
                 (int) Math.round(24 * Math.pow(1.6, crystalMine - 1)),
                 0,
                 (int) Math.round(10 * crystalMine * Math.pow(1.1, crystalMine))
-                        - (int) Math.round(10 * (crystalMine -1) * Math.pow(1.1, (crystalMine -1)))
+                        - (int) Math.round(10 * (crystalMine - 1) * Math.pow(1.1, (crystalMine - 1)))
         );
     }
 
@@ -109,7 +109,7 @@ public class ResourcesBuildingsUtils {
                 (int) Math.round(75 * Math.pow(1.5, deutSynth - 1)),
                 0,
                 (int) Math.round(20 * deutSynth * Math.pow(1.1, deutSynth))
-                        - (int) Math.round(20 * (deutSynth -1) * Math.pow(1.1, (deutSynth -1)))
+                        - (int) Math.round(20 * (deutSynth - 1) * Math.pow(1.1, (deutSynth - 1)))
         );
     }
 
@@ -132,16 +132,16 @@ public class ResourcesBuildingsUtils {
     }
 
     public static Boolean notEnoughEnergy(PlanetsResourcesBuildingsDto resourcesBuildings, PlanetsResourcesDto resources, Boolean autoBuildDeut) {
-        return !(ResourcesBuildingsUtils.getMetalMineEnoughEnergy(resourcesBuildings.getMetalMine() +1, resources)
-                || ResourcesBuildingsUtils.getCrystalMineEnoughEnergy(resourcesBuildings.getCrystalMine() +1, resources)
-                || autoBuildDeut && ResourcesBuildingsUtils.getDeutSynthEnoughEnergy(resourcesBuildings.getDeuteriumSynthesizer() +1, resources));
+        return !(ResourcesBuildingsUtils.getMetalMineEnoughEnergy(resourcesBuildings.getMetalMine() + 1, resources)
+                || ResourcesBuildingsUtils.getCrystalMineEnoughEnergy(resourcesBuildings.getCrystalMine() + 1, resources)
+                || autoBuildDeut && ResourcesBuildingsUtils.getDeutSynthEnoughEnergy(resourcesBuildings.getDeuteriumSynthesizer() + 1, resources));
     }
-    
+
     private static Integer calculateMetalMineProduction(Integer metalMine, Integer serverSpeed, Boolean hasGeologue) {
         Double geologue = hasGeologue ? 1.1 : 1;
         Integer prodBase = 30 * serverSpeed;
         Integer prodMine = (int) Math.round(30 * metalMine * Math.pow(1.1, metalMine) * geologue) * serverSpeed;
-        
+
         return prodBase + prodMine;
     }
 

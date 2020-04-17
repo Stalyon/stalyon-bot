@@ -1,17 +1,15 @@
 package com.stalyon.ogame.service;
 
 import com.stalyon.ogame.OgameApiService;
+import com.stalyon.ogame.config.OgameProperties;
 import com.stalyon.ogame.constants.OgameCst;
 import com.stalyon.ogame.dto.AttackDto;
 import com.stalyon.ogame.dto.CoordinateDto;
 import com.stalyon.ogame.dto.PlanetDto;
 import com.stalyon.ogame.dto.PlanetsResourcesDto;
-import com.stalyon.ogame.utils.AlertService;
+import com.stalyon.ogame.utils.MessageService;
 import com.stalyon.ogame.utils.ShipsUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -26,16 +24,14 @@ import java.util.List;
 @Profile("!noIsUnderAttack")
 public class IsUnderAttackService {
 
-    private static Logger LOGGER = LoggerFactory.getLogger(IsUnderAttackService.class);
-
-    @Value("${isunderattack.enemy.vaisseau.min}")
-    private Integer ENEMY_VAISSEAU_MIN;
-
-    @Autowired
-    private AlertService alertService;
-
     @Autowired
     private OgameApiService ogameApiService;
+
+    @Autowired
+    private OgameProperties ogameProperties;
+
+    @Autowired
+    private MessageService messageService;
 
     @Scheduled(cron = "20 * * * * *") // every minute
     public void isUnderAttack() throws IOException {
@@ -44,19 +40,16 @@ public class IsUnderAttackService {
             List<AttackDto> attacks = this.ogameApiService.getAttacks();
 
             for (AttackDto attack : attacks) {
-                if (ShipsUtils.countAttackShips(attack.getShips()) > this.ENEMY_VAISSEAU_MIN || attack.getShips().getDeathstar() > 0) {
-                    LOGGER.info("/!\\ /!\\ /!\\ Alerte générale ! (Attaque de " + attack.getAttackerName() + ") /!\\ /!\\ /!\\");
-
-                    this.alertService.runAlarm();
-                    this.alertService.sendMail("/!\\ /!\\ /!\\ Alerte générale ! (Attaque de " + attack.getAttackerName() + ") /!\\ /!\\ /!\\");
+                if (ShipsUtils.countAttackShips(attack.getShips()) > this.ogameProperties.IS_UNDER_ATTACKENEMY_VAISSEAUX_MIN || attack.getShips().getDeathstar() > 0) {
+                    this.messageService.logInfo("/!\\ /!\\ /!\\ Alerte générale ! (Attaque de " + attack.getAttackerName() + ") /!\\ /!\\ /!\\", Boolean.TRUE, Boolean.TRUE);
 
                     long diffSeconds = (attack.getArrivalTime().getTime() - new Date().getTime()) / 1000;
-                    if (diffSeconds < 4*60) {
+                    if (diffSeconds < 4 * 60) {
                         // Si l'attaque est dans moins de 4min, sauvetage de la flotte et des ressources
                         this.saveFleet(attack.getDestination());
                     }
                 } else if (attack.getMissionType().equals(OgameCst.SPY)) {
-                    LOGGER.info("Espionnage de la part de " + attack.getAttackerName());
+                    this.messageService.logInfo("Espionnage de la part de " + attack.getAttackerName(), Boolean.FALSE, Boolean.FALSE);
                 }
             }
         }
@@ -82,7 +75,7 @@ public class IsUnderAttackService {
         formData.add("deuterium", resources.getDeuterium().toString());
 
         this.ogameApiService.sendFleet(destinationId, formData);
-        LOGGER.info("Sauvetage de la flotte : envoyée à 20% sur CDR en " + destination.getGalaxy() + ":"
-                + destination.getSystem() + ":" + destination.getPosition());
+        this.messageService.logInfo("Sauvetage de la flotte : envoyée à 20% sur CDR en " + destination.getGalaxy() + ":"
+                + destination.getSystem() + ":" + destination.getPosition(), Boolean.FALSE, Boolean.FALSE);
     }
 }

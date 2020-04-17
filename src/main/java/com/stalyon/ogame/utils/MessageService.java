@@ -6,8 +6,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-
 @Service
 public class MessageService {
 
@@ -29,11 +27,7 @@ public class MessageService {
         LOGGER.info(message);
 
         if (withAlert) {
-            try {
-                this.alertService.runAlarm();
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage(), e);
-            }
+            this.alertService.runAlarm();
         }
 
         if (withMail) {

@@ -131,11 +131,20 @@ public class OgameProperties {
     @Value("${mines.auto.build.planets.clusterized}")
     public List<Integer> MINES_CLUSTERIZED_PLANETS;
 
-    @Value("${mines.auto.max.solarplant}")
-    public Integer MINES_SOLAR_PLANT_MAX;
+    @Value("${mines.auto.max.minemetal}")
+    public Integer MINES_MINE_METAL_MAX;
+
+    @Value("${mines.auto.max.minecristal}")
+    public Integer MINES_MINE_CRISTAL_MAX;
 
     @Value("${mines.auto.max.synthedeut}")
     public Integer MINES_SYNTHE_DEUT_MAX;
+
+    @Value("${mines.auto.max.solarplant}")
+    public Integer MINES_SOLAR_PLANT_MAX;
+
+    @Value("${mines.auto.max.reactorfusion}")
+    public Integer MINES_REACTOR_FUSION_MAX;
 
     @Value(("${mines.auto.build.transport.stockage}"))
     public Integer MINES_TRANSPORT_STOCKAGE;

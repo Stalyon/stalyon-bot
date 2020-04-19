@@ -113,7 +113,20 @@ public class OgameProperties {
 
     // Is under attack
     @Value("${isunderattack.enemy.vaisseaux.min}")
-    public Integer IS_UNDER_ATTACKENEMY_VAISSEAUX_MIN;
+    public Integer IS_UNDER_ATTACK_ENEMY_VAISSEAUX_MIN;
+
+    @Value("${isunderattack.escape.park.coord.galaxy}")
+    public List<Integer> IS_UNDER_ATTACK_ESCAPE_COORD_GALAXY;
+
+    @Value("${isunderattack.escape.park.coord.system}")
+    public List<Integer> IS_UNDER_ATTACK_ESCAPE_COORD_SYSTEM;
+
+    @Value("${isunderattack.escape.park.coord.position}")
+    public List<Integer> IS_UNDER_ATTACK_ESCAPE_COORD_POSITION;
+
+    @Value("${isunderattack.escape.park.coord.moon}")
+    public List<Boolean> IS_UNDER_ATTACK_ESCAPE_COORD_MOON;
+
 
     // Mines
     @Value("${mines.auto.build}")

@@ -40,7 +40,7 @@ public class IsUnderAttackService {
             List<AttackDto> attacks = this.ogameApiService.getAttacks();
 
             for (AttackDto attack : attacks) {
-                if (ShipsUtils.countAttackShips(attack.getShips()) > this.ogameProperties.IS_UNDER_ATTACKENEMY_VAISSEAUX_MIN || attack.getShips().getDeathstar() > 0) {
+                if (ShipsUtils.countAttackShips(attack.getShips()) > this.ogameProperties.IS_UNDER_ATTACK_ENEMY_VAISSEAUX_MIN || attack.getShips().getDeathstar() > 0) {
                     this.messageService.logInfo("/!\\ /!\\ /!\\ Alerte générale ! (Attaque de " + attack.getAttackerName() + ") /!\\ /!\\ /!\\", Boolean.TRUE, Boolean.TRUE);
 
                     long diffSeconds = (attack.getArrivalTime().getTime() - new Date().getTime()) / 1000;
@@ -64,18 +64,43 @@ public class IsUnderAttackService {
 
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         ShipsUtils.allShips().forEach(ship -> formData.add("ships", ship));
-        formData.add("mission", OgameCst.RECYCLE_DEBRIS_FIELD.toString());
-        formData.add("speed", OgameCst.TWENTY_PERCENT.toString());
-        formData.add("galaxy", destination.getGalaxy().toString());
-        formData.add("system", destination.getSystem().toString());
-        formData.add("position", destination.getPosition().toString());
-        formData.add("type", OgameCst.RECYCLE_DEBRIS_FIELD.toString());
+
+        if (destination.getType().equals(OgameCst.MOON_TYPE) || this.ogameProperties.IS_UNDER_ATTACK_ESCAPE_COORD_GALAXY.isEmpty()) {
+            formData.add("mission", OgameCst.RECYCLE_DEBRIS_FIELD.toString());
+            formData.add("speed", OgameCst.TWENTY_PERCENT.toString());
+            formData.add("galaxy", destination.getGalaxy().toString());
+            formData.add("system", destination.getSystem().toString());
+            formData.add("position", destination.getPosition().toString());
+        } else {
+            formData.add("mission", OgameCst.PARK.toString());
+            formData.add("speed", OgameCst.HUNDRED_PERCENT.toString());
+
+            int i = 0;
+            // Si la planète attaquée correspond à la planète vers laquelle stationner, prendre la suivante
+            if (!this.ogameProperties.IS_UNDER_ATTACK_ESCAPE_COORD_MOON.get(i)
+                    && destination.getGalaxy().equals(this.ogameProperties.IS_UNDER_ATTACK_ESCAPE_COORD_GALAXY.get(i))
+                    && destination.getSystem().equals(this.ogameProperties.IS_UNDER_ATTACK_ESCAPE_COORD_SYSTEM.get(i))
+                    && destination.getPosition().equals(this.ogameProperties.IS_UNDER_ATTACK_ESCAPE_COORD_POSITION.get(i))) {
+                i = 1;
+            }
+
+            formData.add("galaxy", this.ogameProperties.IS_UNDER_ATTACK_ESCAPE_COORD_GALAXY.get(i).toString());
+            formData.add("system", this.ogameProperties.IS_UNDER_ATTACK_ESCAPE_COORD_SYSTEM.get(i).toString());
+            formData.add("position", this.ogameProperties.IS_UNDER_ATTACK_ESCAPE_COORD_POSITION.get(i).toString());
+
+            if (this.ogameProperties.IS_UNDER_ATTACK_ESCAPE_COORD_MOON.get(i)) {
+                formData.add("type", OgameCst.MOON_TYPE.toString());
+            } else {
+                formData.add("type", OgameCst.PLANET_TYPE.toString());
+            }
+        }
+
         formData.add("metal", resources.getMetal().toString());
         formData.add("crystal", resources.getCrystal().toString());
         formData.add("deuterium", resources.getDeuterium().toString());
 
         this.ogameApiService.sendFleet(destinationId, formData);
-        this.messageService.logInfo("Sauvetage de la flotte : envoyée à 20% sur CDR en " + destination.getGalaxy() + ":"
+        this.messageService.logInfo("Sauvetage de la flotte en " + destination.getGalaxy() + ":"
                 + destination.getSystem() + ":" + destination.getPosition(), Boolean.FALSE, Boolean.FALSE);
     }
 }

@@ -246,7 +246,6 @@ public class AttaquesService {
                 .filter(inactive -> inactive.getResources() != null)
                 .filter(inactive -> (inactive.getResources().getMetal() + inactive.getResources().getCrystal() + inactive.getResources().getDeuterium()) > this.ogameProperties.ATTAQUES_AUTO_MINIMAL_RESOURCES)
                 .sorted((i1, i2) -> (i2.getResources().getMetal() + i2.getResources().getCrystal() + i2.getResources().getDeuterium()) - (i1.getResources().getMetal() + i1.getResources().getCrystal() + i1.getResources().getDeuterium()))
-                .limit(8)
                 .collect(Collectors.toList()));
 
         this.inactivesToSort = new ArrayList<>();

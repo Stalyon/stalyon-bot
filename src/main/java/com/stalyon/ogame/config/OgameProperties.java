@@ -196,6 +196,9 @@ public class OgameProperties {
     @Value("${spy.filter.allys.excluded}")
     public List<Integer> SPY_ALLYS_EXCLUDED;
 
+    @Value("${spy.filter.players.excluded}")
+    public List<Integer> SPY_PLAYERS_EXCLUDED;
+
     // Discord
     @Value("${discord.bot.enable}")
     public Boolean DISCORD_BOT_ENABLE;

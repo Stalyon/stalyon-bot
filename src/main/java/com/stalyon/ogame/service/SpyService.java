@@ -105,6 +105,7 @@ public class SpyService {
         return !galaxyPlanet.getInactive() && !galaxyPlanet.getAdministrator() && !galaxyPlanet.getBanned()
                 && !galaxyPlanet.getNewbie() && !galaxyPlanet.getVacation()
                 && galaxyPlanet.getPlayer().getRank() > this.ogameProperties.SPY_PLAYER_RANK_MIN
+                && (galaxyPlanet.getPlayer() != null && !this.ogameProperties.SPY_PLAYERS_EXCLUDED.contains(galaxyPlanet.getPlayer().getId()))
                 && (galaxyPlanet.getAlliance() == null || !this.ogameProperties.SPY_ALLYS_EXCLUDED.contains(galaxyPlanet.getAlliance().getId()))
                 && (galaxyPlanet.getActivity().equals(0) || galaxyPlanet.getActivity() > this.ogameProperties.SPY_LAST_ACTIVITY_MIN);
     }
@@ -113,6 +114,7 @@ public class SpyService {
         return !galaxyPlanet.getInactive() && !galaxyPlanet.getAdministrator() && !galaxyPlanet.getBanned()
                 && !galaxyPlanet.getNewbie() && !galaxyPlanet.getVacation()
                 && galaxyPlanet.getPlayer().getRank() > this.ogameProperties.SPY_PLAYER_RANK_MIN
+                && (galaxyPlanet.getPlayer() != null && !this.ogameProperties.SPY_PLAYERS_EXCLUDED.contains(galaxyPlanet.getPlayer().getId()))
                 && (galaxyPlanet.getAlliance() == null || !this.ogameProperties.SPY_ALLYS_EXCLUDED.contains(galaxyPlanet.getAlliance().getId()))
                 && (galaxyPlanet.getMoon().getActivity().equals(0) || galaxyPlanet.getMoon().getActivity() > this.ogameProperties.SPY_LAST_ACTIVITY_MIN);
     }

@@ -61,6 +61,6 @@ public class InfoCompteService {
                 + " - Transports : " + nbTransport + " Expéditions : " + nbExpe);
         content.add("------");
 
-        messageService.logInfo(String.join("\n", content), Boolean.FALSE, Boolean.TRUE);
+        messageService.logInfo(String.join("\n", content), Boolean.FALSE, Boolean.FALSE);
     }
 }

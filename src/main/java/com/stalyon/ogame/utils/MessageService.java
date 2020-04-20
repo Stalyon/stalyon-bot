@@ -35,7 +35,11 @@ public class MessageService {
         }
 
         if (this.ogameProperties.DISCORD_BOT_ENABLE) {
-            this.discordService.sendMessage(message);
+            if (withAlert || withMail) {
+                this.discordService.sendMessage("@everyone" + message);
+            } else {
+                this.discordService.sendMessage(message);
+            }
         }
     }
 }

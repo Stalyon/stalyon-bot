@@ -12,6 +12,13 @@ public class OgameProperties {
     @Value("${bot.url}")
     public String BOT_URL;
 
+    // Infos
+    @Value("${infos.planets.id.enable}")
+    public Boolean INFOS_PLANETS_ID_ENABLE;
+
+    @Value("${infos.compte.enable}")
+    public Boolean INFOS_COMPTE_ENABLE;
+
     // Attaques automatiques
     @Value("${attaques.auto.coord.galaxy}")
     public List<Integer> ATTAQUES_AUTO_COORD_GALAXY;
@@ -21,6 +28,9 @@ public class OgameProperties {
 
     @Value("${attaques.auto.coord.system.max}")
     public List<Integer> ATTAQUES_AUTO_COORD_SYSTEM_MAX;
+
+    @Value("${attaques.auto.enable}")
+    public Boolean ATTAQUES_AUTO_ENABLE;
 
     @Value("${attaques.auto.planet}")
     public List<Integer> ATTAQUES_AUTO_AUTO_PLANET_ID;
@@ -63,8 +73,8 @@ public class OgameProperties {
     public Boolean EXPE_THEFT_AUTO;
 
     // Expéditions
-    @Value("${expedition.debris.check}")
-    public Boolean EXPEDITION_DEBRIS_CHECK;
+    @Value("${expedition.enable}")
+    public Boolean EXPEDITION_ENABLE;
 
     @Value("${expedition.planet}")
     public Integer EXPEDITION_PLANET;
@@ -127,16 +137,12 @@ public class OgameProperties {
     @Value("${isunderattack.escape.park.coord.moon}")
     public List<Boolean> IS_UNDER_ATTACK_ESCAPE_COORD_MOON;
 
-
     // Mines
-    @Value("${mines.auto.build}")
-    public Boolean MINES_AUTO_BUILD;
+    @Value("${mines.auto.build.enable}")
+    public Boolean MINES_AUTO_BUILD_ENABLE;
 
     @Value("${mines.auto.build.transport}")
     public Boolean MINES_AUTO_BUILD_TRANSPORT;
-
-    @Value("${mines.auto.build.synthedeut}")
-    public Boolean MINES_AUTO_BUILD_DEUT;
 
     @Value("${mines.auto.build.planets.excluded}")
     public List<Integer> MINES_EXCLUDED_PLANETS;
@@ -179,6 +185,9 @@ public class OgameProperties {
     public String ALERT_MAIL_TO;
 
     // Espionnage
+    @Value("${spy.enable}")
+    public Boolean SPY_ENABLE;
+
     @Value("${spy.coord.galaxy}")
     public Integer SPY_COORD_GALAXY;
 

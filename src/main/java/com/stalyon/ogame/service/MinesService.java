@@ -34,19 +34,24 @@ public class MinesService {
     private MessageService messageService;
 
     @Autowired
+    private ResourcesBuildingsUtils resourcesBuildingsUtils;
+
+    @Autowired
     private SlotsService slotsService;
 
     private List<Integer> waittingClusterizedPlanets = new ArrayList<>();
 
     @Scheduled(cron = "0 0/2 * * * *") // every minute
     public void autoBuild() {
-        if (this.ogameProperties.MINES_AUTO_BUILD) {
+        if (this.ogameProperties.MINES_AUTO_BUILD_ENABLE) {
             // Récupération des planètes
             List<PlanetDto> planets = this.ogameApiService.getPlanets();
 
+            // Filtrage sur les planètes non exclues
             planets.stream()
                     .filter(planet -> this.ogameProperties.MINES_EXCLUDED_PLANETS == null
                             || this.ogameProperties.MINES_EXCLUDED_PLANETS.stream().noneMatch(p -> p.equals(planet.getId())))
+                    .filter(planet -> this.ogameApiService.getPlanetsConstructions(planet).getBuildingID() == 0)
                     .forEach(planet -> {
                         // Récupération des ressources pour la planète
                         PlanetsResourcesDto resources = this.ogameApiService.getPlanetsResources(planet);
@@ -55,60 +60,57 @@ public class MinesService {
                         PlanetsResourcesBuildingsDto resourcesBuildings =
                                 this.ogameApiService.getPlanetsResourcesBuildings(planet);
 
-                        if (this.ogameApiService.getPlanetsConstructions(planet).getBuildingID() == 0) {
-                            boolean launched = false;
-                            if (resourcesBuildings.getMetalMine() < this.ogameProperties.MINES_MINE_METAL_MAX
-                                    && ResourcesBuildingsUtils.canBuildMetalMine(resourcesBuildings.getMetalMine() + 1, resources)) {
-                                this.messageService.logInfo("Construction Mine Métal " + (resourcesBuildings.getMetalMine() + 1) + " sur " + planet.getName(), Boolean.FALSE, Boolean.FALSE);
+                        boolean launched = false;
+                        if (this.resourcesBuildingsUtils.canBuildMetalMine(resourcesBuildings.getMetalMine(), resources)) {
+                            // Si le niveau de la mine de métal est inférieur au paramétrage et qu'il y a assez de ressources : construction
+                            this.messageService.logInfo("Construction Mine Métal " + (resourcesBuildings.getMetalMine() + 1) + " sur " + planet.getName(), Boolean.FALSE, Boolean.FALSE);
+
+                            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+                            this.ogameApiService.buildBuilding(planet.getId(), OgameCst.METAL_MINE_ID, formData);
+                            launched = true;
+                        } else if (this.resourcesBuildingsUtils.canBuildCrystalMine(resourcesBuildings.getCrystalMine(), resources)) {
+                            // Si le niveau de la mine de cristal est inférieur au paramétrage et qu'il y a assez de ressources : construction
+                            this.messageService.logInfo("Construction Mine Cristal " + (resourcesBuildings.getCrystalMine() + 1) + " sur " + planet.getName(), Boolean.FALSE, Boolean.FALSE);
+
+                            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+                            this.ogameApiService.buildBuilding(planet.getId(), OgameCst.CRYSTAL_MINE_ID, formData);
+                            launched = true;
+                        } else if (this.resourcesBuildingsUtils.canBuildDeutSynth(resourcesBuildings.getDeuteriumSynthesizer(), resources)) {
+                            // Si le niveau du synthé est inférieur au paramétrage et qu'il y a assez de ressources : construction
+                            this.messageService.logInfo("Construction Synthé Deut " + (resourcesBuildings.getDeuteriumSynthesizer() + 1) + " sur " + planet.getName(), Boolean.FALSE, Boolean.FALSE);
+
+                            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+                            this.ogameApiService.buildBuilding(planet.getId(), OgameCst.DEUTERIUM_SYNTHESIZER_ID, formData);
+                            launched = true;
+                        } else if (this.resourcesBuildingsUtils.notEnoughEnergy(resourcesBuildings, resources)) {
+                            if (this.resourcesBuildingsUtils.canBuildCentraleSolaire(resourcesBuildings.getSolarPlant(), resources)) {
+                                // S'il n'y a pas assez d'énergie pour construire une mine, que le niveau de la CES est inférieur au paramétrage, et qu'il y a assez de ressources : construction
+                                this.messageService.logInfo("Construction Centrale Solaire " + (resourcesBuildings.getSolarPlant() + 1) + " sur " + planet.getName(), Boolean.FALSE, Boolean.FALSE);
 
                                 MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-                                this.ogameApiService.buildBuilding(planet.getId(), OgameCst.METAL_MINE_ID, formData);
+                                this.ogameApiService.buildBuilding(planet.getId(), OgameCst.SOLAR_PLANT_ID, formData);
                                 launched = true;
-                            } else if (resourcesBuildings.getMetalMine() < this.ogameProperties.MINES_MINE_CRISTAL_MAX
-                                    && ResourcesBuildingsUtils.canBuildCrystalMine(resourcesBuildings.getCrystalMine() + 1, resources)) {
-                                this.messageService.logInfo("Construction Mine Cristal " + (resourcesBuildings.getCrystalMine() + 1) + " sur " + planet.getName(), Boolean.FALSE, Boolean.FALSE);
+                            } else if (this.resourcesBuildingsUtils.canBuildFusionReactor(resourcesBuildings.getFusionReactor(), resources)) {
+                                // S'il n'y a pas assez d'énergie pour construire une mine, que le niveau de la CEF est inférieur au paramétrage, et qu'il y a assez de ressources : construction
+                                this.messageService.logInfo("Construction Réacteur Fusion " + (resourcesBuildings.getFusionReactor() + 1) + " sur " + planet.getName(), Boolean.FALSE, Boolean.FALSE);
 
                                 MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-                                this.ogameApiService.buildBuilding(planet.getId(), OgameCst.CRYSTAL_MINE_ID, formData);
+                                this.ogameApiService.buildBuilding(planet.getId(), OgameCst.FUSION_REACTOR_ID, formData);
                                 launched = true;
-                            } else if (this.ogameProperties.MINES_AUTO_BUILD_DEUT && resourcesBuildings.getDeuteriumSynthesizer() < this.ogameProperties.MINES_SYNTHE_DEUT_MAX
-                                    && ResourcesBuildingsUtils.canBuildDeutSynth(resourcesBuildings.getDeuteriumSynthesizer() + 1, resources)) {
-                                this.messageService.logInfo("Construction Synthé Deut " + (resourcesBuildings.getDeuteriumSynthesizer() + 1) + " sur " + planet.getName(), Boolean.FALSE, Boolean.FALSE);
-
-                                MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-                                this.ogameApiService.buildBuilding(planet.getId(), OgameCst.DEUTERIUM_SYNTHESIZER_ID, formData);
-                                launched = true;
-                            } else if (ResourcesBuildingsUtils.notEnoughEnergy(resourcesBuildings, resources, this.ogameProperties.MINES_AUTO_BUILD_DEUT)) {
-                                if (resourcesBuildings.getSolarPlant() < this.ogameProperties.MINES_SOLAR_PLANT_MAX
-                                        && ResourcesBuildingsUtils.canBuildCentraleSolaire(resourcesBuildings.getSolarPlant() + 1, resources)) {
-                                    this.messageService.logInfo("Construction Centrale Solaire  " + (resourcesBuildings.getSolarPlant() + 1) + " sur " + planet.getName(), Boolean.FALSE, Boolean.FALSE);
-
-                                    MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-                                    this.ogameApiService.buildBuilding(planet.getId(), OgameCst.SOLAR_PLANT_ID, formData);
-                                    launched = true;
-                                } else if (resourcesBuildings.getSolarPlant() >= this.ogameProperties.MINES_SOLAR_PLANT_MAX
-                                        && resourcesBuildings.getFusionReactor() < this.ogameProperties.MINES_REACTOR_FUSION_MAX
-                                        && ResourcesBuildingsUtils.canBuildFusionReactor(resourcesBuildings.getFusionReactor() + 1, resources, this.ogameProperties.ENERGY_TECH)) {
-                                    this.messageService.logInfo("Construction Réacteur Fusion " + (resourcesBuildings.getFusionReactor() + 1) + " sur " + planet.getName(), Boolean.FALSE, Boolean.FALSE);
-
-                                    MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-                                    this.ogameApiService.buildBuilding(planet.getId(), OgameCst.FUSION_REACTOR_ID, formData);
-                                    launched = true;
-                                }
                             }
+                        }
 
-                            if (launched) {
-                                this.waittingClusterizedPlanets.remove(planet.getId());
-                            }
+                        if (launched) {
+                            this.waittingClusterizedPlanets.remove(planet.getId());
                         }
                     });
         }
     }
 
-    @Scheduled(cron = "50 0/15 * * * *") // every 15 minutes
+    @Scheduled(cron = "50 0/15 * * * *") // every 15-minutes
     public void autoBuildTransport() {
         if (this.ogameProperties.MINES_AUTO_BUILD_TRANSPORT) {
-            // Récupération des planètes
+            // Récupération des planètes / lunes
             List<PlanetDto> myPlanets = this.ogameApiService.getPlanets();
             List<PlanetClusterizedHelperDto> planetsClusterized = new ArrayList<>();
 
@@ -127,12 +129,15 @@ public class MinesService {
                 }
             });
 
+            // Filtrage sur les planètes (pas lunes) clusterizées et non exclues, et qui n'ont pas de construction en cours
             planets.stream()
                     .filter(planet -> this.ogameProperties.MINES_EXCLUDED_PLANETS == null
                             || this.ogameProperties.MINES_EXCLUDED_PLANETS.stream().noneMatch(p -> p.equals(planet.getId())))
                     .filter(planet -> !this.waittingClusterizedPlanets.contains(planet.getId()))
                     .filter(planet -> this.ogameProperties.MINES_CLUSTERIZED_PLANETS != null
                             && this.ogameProperties.MINES_CLUSTERIZED_PLANETS.stream().anyMatch(p -> p.equals(planet.getId())))
+                    .filter(planet -> planet.getIsMoon() == null || !planet.getIsMoon())
+                    .filter(planet -> this.ogameApiService.getPlanetsConstructions(planet).getBuildingID() == 0)
                     .forEach(planet -> {
                         // Récupération des ressources pour la planète
                         PlanetsResourcesDto resources = this.ogameApiService.getPlanetsResources(planet);
@@ -141,42 +146,43 @@ public class MinesService {
                         PlanetsResourcesBuildingsDto resourcesBuildings =
                                 this.ogameApiService.getPlanetsResourcesBuildings(planet);
 
-                        // Si la planète n'a pas de construction en cours...
-                        if ((planet.getIsMoon() == null || !planet.getIsMoon()) && this.ogameApiService.getPlanetsConstructions(planet).getBuildingID() == 0
-                                && !(resourcesBuildings.getMetalMine() < this.ogameProperties.MINES_MINE_METAL_MAX && ResourcesBuildingsUtils.canBuildMetalMine(resourcesBuildings.getMetalMine() + 1, resources)
-                                    || resourcesBuildings.getCrystalMine() < this.ogameProperties.MINES_MINE_CRISTAL_MAX && ResourcesBuildingsUtils.canBuildCrystalMine(resourcesBuildings.getCrystalMine() + 1, resources)
-                                    || this.ogameProperties.MINES_AUTO_BUILD_DEUT && ResourcesBuildingsUtils.canBuildDeutSynth(resourcesBuildings.getDeuteriumSynthesizer() + 1, resources) && resourcesBuildings.getDeuteriumSynthesizer() < this.ogameProperties.MINES_SYNTHE_DEUT_MAX
-                                    || ResourcesBuildingsUtils.notEnoughEnergy(resourcesBuildings, resources, this.ogameProperties.MINES_AUTO_BUILD_DEUT)
-                                        && (resourcesBuildings.getSolarPlant() < this.ogameProperties.MINES_SOLAR_PLANT_MAX && ResourcesBuildingsUtils.canBuildCentraleSolaire(resourcesBuildings.getSolarPlant() + 1, resources)
-                                            || resourcesBuildings.getFusionReactor() < this.ogameProperties.MINES_REACTOR_FUSION_MAX && resourcesBuildings.getSolarPlant() >= this.ogameProperties.MINES_SOLAR_PLANT_MAX && ResourcesBuildingsUtils.canBuildFusionReactor(resourcesBuildings.getFusionReactor() + 1, resources, this.ogameProperties.ENERGY_TECH)))) {
+                        // Vérification que la planète ne puisse pas construire de bâtiment
+                        if (!(this.resourcesBuildingsUtils.canBuildMetalMine(resourcesBuildings.getMetalMine(), resources)
+                                || this.resourcesBuildingsUtils.canBuildCrystalMine(resourcesBuildings.getCrystalMine(), resources)
+                                || this.resourcesBuildingsUtils.canBuildDeutSynth(resourcesBuildings.getDeuteriumSynthesizer(), resources)
+                                || this.resourcesBuildingsUtils.notEnoughEnergy(resourcesBuildings, resources)
+                                && (this.resourcesBuildingsUtils.canBuildCentraleSolaire(resourcesBuildings.getSolarPlant(), resources)
+                                || resourcesBuildings.getSolarPlant() >= this.ogameProperties.MINES_SOLAR_PLANT_MAX && this.resourcesBuildingsUtils.canBuildFusionReactor(resourcesBuildings.getFusionReactor(), resources)))) {
                             // Calculer le prochain bâtiment à lancer
                             PlanetsResourcesDto metalMineCost = ResourcesBuildingsUtils.getMetalMineCost(resourcesBuildings.getMetalMine() + 1);
-                            Integer metalMineEcoTime = ResourcesBuildingsUtils
-                                    .getEcoTime(metalMineCost, resourcesBuildings, resources, this.ogameProperties.SERVER_SPEED, this.ogameProperties.HAS_GEOLOGUE);
+                            Integer metalMineEcoTime = this.resourcesBuildingsUtils
+                                    .getEcoTime(metalMineCost, resourcesBuildings, resources);
 
                             PlanetsResourcesDto crystalMineCost = ResourcesBuildingsUtils.getCrystalMineCost(resourcesBuildings.getCrystalMine() + 1);
-                            Integer crystalMineEcoTime = ResourcesBuildingsUtils
-                                    .getEcoTime(crystalMineCost, resourcesBuildings, resources, this.ogameProperties.SERVER_SPEED, this.ogameProperties.HAS_GEOLOGUE);
+                            Integer crystalMineEcoTime = this.resourcesBuildingsUtils
+                                    .getEcoTime(crystalMineCost, resourcesBuildings, resources);
 
                             PlanetsResourcesDto deutSynthCost = ResourcesBuildingsUtils.getDeutSynthCost(resourcesBuildings.getDeuteriumSynthesizer() + 1);
-                            Integer deutSynthEcoTime = ResourcesBuildingsUtils
-                                    .getEcoTime(deutSynthCost, resourcesBuildings, resources, this.ogameProperties.SERVER_SPEED, this.ogameProperties.HAS_GEOLOGUE);
+                            Integer deutSynthEcoTime = this.resourcesBuildingsUtils
+                                    .getEcoTime(deutSynthCost, resourcesBuildings, resources);
 
                             PlanetsResourcesDto centraleSolaireCost = ResourcesBuildingsUtils.getCentraleSolaireCost(resourcesBuildings.getSolarPlant() + 1);
-                            Integer centraleSolaireEcoTime = ResourcesBuildingsUtils
-                                    .getEcoTime(centraleSolaireCost, resourcesBuildings, resources, this.ogameProperties.SERVER_SPEED, this.ogameProperties.HAS_GEOLOGUE);
+                            Integer centraleSolaireEcoTime = this.resourcesBuildingsUtils
+                                    .getEcoTime(centraleSolaireCost, resourcesBuildings, resources);
 
-                            PlanetsResourcesDto reactorFusionCost = ResourcesBuildingsUtils.getFusionReactorCost(resourcesBuildings.getFusionReactor() + 1, this.ogameProperties.ENERGY_TECH);
-                            Integer reactorFusionEcoTime = ResourcesBuildingsUtils
-                                    .getEcoTime(reactorFusionCost, resourcesBuildings, resources, this.ogameProperties.SERVER_SPEED, this.ogameProperties.HAS_GEOLOGUE);
+                            PlanetsResourcesDto reactorFusionCost = this.resourcesBuildingsUtils.getFusionReactorCost(resourcesBuildings.getFusionReactor() + 1);
+                            Integer reactorFusionEcoTime = this.resourcesBuildingsUtils
+                                    .getEcoTime(reactorFusionCost, resourcesBuildings, resources);
 
-                            if (!ResourcesBuildingsUtils.getMetalMineEnoughEnergy(resourcesBuildings.getMetalMine() + 1, resources) || resourcesBuildings.getMetalMine() >= this.ogameProperties.MINES_MINE_METAL_MAX) {
+                            if (resourcesBuildings.getMetalMine() >= this.ogameProperties.MINES_MINE_METAL_MAX
+                                    || !ResourcesBuildingsUtils.getMetalMineEnoughEnergy(resourcesBuildings.getMetalMine() + 1, resources)) {
                                 metalMineEcoTime = Integer.MAX_VALUE;
                             }
-                            if (!ResourcesBuildingsUtils.getCrystalMineEnoughEnergy(resourcesBuildings.getCrystalMine() + 1, resources) || resourcesBuildings.getCrystalMine() >= this.ogameProperties.MINES_MINE_CRISTAL_MAX) {
+                            if (resourcesBuildings.getCrystalMine() >= this.ogameProperties.MINES_MINE_CRISTAL_MAX
+                                    || !ResourcesBuildingsUtils.getCrystalMineEnoughEnergy(resourcesBuildings.getCrystalMine() + 1, resources)) {
                                 crystalMineEcoTime = Integer.MAX_VALUE;
                             }
-                            if (!this.ogameProperties.MINES_AUTO_BUILD_DEUT || resourcesBuildings.getDeuteriumSynthesizer() >= this.ogameProperties.MINES_SYNTHE_DEUT_MAX
+                            if (resourcesBuildings.getDeuteriumSynthesizer() >= this.ogameProperties.MINES_SYNTHE_DEUT_MAX
                                     || !ResourcesBuildingsUtils.getDeutSynthEnoughEnergy(resourcesBuildings.getDeuteriumSynthesizer() + 1, resources)) {
                                 deutSynthEcoTime = Integer.MAX_VALUE;
                             }
@@ -200,10 +206,24 @@ public class MinesService {
                             } else {
                                 planetsClusterized.add(new PlanetClusterizedHelperDto(null, planet, null, null, resources));
                             }
-                        } else if (this.ogameApiService.getPlanetsConstructions(planet).getBuildingID() != 0
-                                || (planet.getIsMoon() != null && planet.getIsMoon())) {
-                            planetsClusterized.add(new PlanetClusterizedHelperDto(null, planet, null, null, resources));
                         }
+                    });
+
+            // Filtrage sur les planètes clusterizées et non exclues, qui ont un bâtiment en construction ou s'il s'agit d'une lune
+            planets.stream()
+                    .filter(planet -> this.ogameProperties.MINES_EXCLUDED_PLANETS == null
+                            || this.ogameProperties.MINES_EXCLUDED_PLANETS.stream().noneMatch(p -> p.equals(planet.getId())))
+                    .filter(planet -> !this.waittingClusterizedPlanets.contains(planet.getId()))
+                    .filter(planet -> this.ogameProperties.MINES_CLUSTERIZED_PLANETS != null
+                            && this.ogameProperties.MINES_CLUSTERIZED_PLANETS.stream().anyMatch(p -> p.equals(planet.getId())))
+                    .filter(planet -> this.ogameApiService.getPlanetsConstructions(planet).getBuildingID() != 0
+                            || (planet.getIsMoon() != null && planet.getIsMoon()))
+                    .forEach(planet -> {
+                        // Récupération des ressources pour la planète
+                        PlanetsResourcesDto resources = this.ogameApiService.getPlanetsResources(planet);
+
+                        // Ajout dans la liste des planètes/lunes pour le transport
+                        planetsClusterized.add(new PlanetClusterizedHelperDto(null, planet, null, null, resources));
                     });
 
             List<PlanetClusterizedHelperDto> planetsClusterizedCloned = planetsClusterized.stream()

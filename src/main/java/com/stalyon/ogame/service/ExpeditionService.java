@@ -40,18 +40,20 @@ public class ExpeditionService {
 
     @Scheduled(cron = "40 * * * * *") // every minute
     public void launchExpedition() {
-        SlotsDto slots = this.ogameApiService.getSlots();
+        if (this.ogameProperties.EXPEDITION_ENABLE) {
+            SlotsDto slots = this.ogameApiService.getSlots();
 
-        while (!slots.getExpInUse().equals(slots.getExpTotal())) {
-            this.sendExpedition();
+            while (!slots.getExpInUse().equals(slots.getExpTotal())) {
+                this.sendExpedition();
 
-            slots = this.ogameApiService.getSlots();
+                slots = this.ogameApiService.getSlots();
+            }
         }
     }
 
     @Scheduled(cron = "10 1/3 * * * *") // every 3-minutes
     public void checkExpeditionDebris() {
-        if (this.ogameProperties.EXPEDITION_DEBRIS_CHECK) {
+        if (this.ogameProperties.EXPEDITION_ENABLE) {
             GalaxyInfosDto galaxyInfos = this.ogameApiService.getGalaxyInfos(this.ogameProperties.EXPEDITION_GALAXY, this.ogameProperties.EXPEDITION_SYSTEM);
             List<FleetDto> fleets = this.ogameApiService.getFleets();
 
@@ -66,7 +68,7 @@ public class ExpeditionService {
                     .reduce(0, Integer::sum);
 
             if (galaxyInfos.getExpeditionDebris() != null
-                    && galaxyInfos.getExpeditionDebris().getPathfindersNeeded() - pathfinderInWork > 10
+                    && galaxyInfos.getExpeditionDebris().getPathfindersNeeded() - pathfinderInWork > 0
                     && this.slotsService.hasEnoughFreeSlots(1)) {
                 this.sendRecycler(galaxyInfos);
             }

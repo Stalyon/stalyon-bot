@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -34,7 +33,7 @@ public class IsUnderAttackService {
     private MessageService messageService;
 
     @Scheduled(cron = "20 * * * * *") // every minute
-    public void isUnderAttack() throws IOException {
+    public void isUnderAttack() {
         if (this.ogameApiService.isUnderAttack()) {
 
             List<AttackDto> attacks = this.ogameApiService.getAttacks();

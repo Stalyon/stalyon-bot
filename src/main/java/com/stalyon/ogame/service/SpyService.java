@@ -23,7 +23,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
-@Profile("spy")
+@Profile("!noSpy")
 public class SpyService {
 
     @Autowired
@@ -43,39 +43,41 @@ public class SpyService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void scan() {
-        for (int i = this.ogameProperties.SPY_COORD_SYSTEM_MIN; i < this.ogameProperties.SPY_COORD_SYSTEM_MAX; i++) {
-            GalaxyInfosDto galaxyInfos = this.ogameApiService.getGalaxyInfos(this.ogameProperties.SPY_COORD_GALAXY, i);
+        if (this.ogameProperties.SPY_ENABLE) {
+            for (int i = this.ogameProperties.SPY_COORD_SYSTEM_MIN; i < this.ogameProperties.SPY_COORD_SYSTEM_MAX; i++) {
+                GalaxyInfosDto galaxyInfos = this.ogameApiService.getGalaxyInfos(this.ogameProperties.SPY_COORD_GALAXY, i);
 
-            if (this.ogameProperties.SPY_FILTER_PLANET) {
-                this.coordsToSpy.addAll(
-                        galaxyInfos.getPlanets()
-                                .stream()
-                                .filter(Objects::nonNull)
-                                .filter(this::planetToSpy)
-                                .map(GalaxyPlanetsDto::getCoordinate)
-                                .map(c -> new CoordinateDto(c.getGalaxy(), c.getSystem(), c.getPosition(), OgameCst.PLANET_TYPE))
-                                .collect(Collectors.toList())
-                );
-            }
+                if (this.ogameProperties.SPY_FILTER_PLANET) {
+                    this.coordsToSpy.addAll(
+                            galaxyInfos.getPlanets()
+                                    .stream()
+                                    .filter(Objects::nonNull)
+                                    .filter(this::planetToSpy)
+                                    .map(GalaxyPlanetsDto::getCoordinate)
+                                    .map(c -> new CoordinateDto(c.getGalaxy(), c.getSystem(), c.getPosition(), OgameCst.PLANET_TYPE))
+                                    .collect(Collectors.toList())
+                    );
+                }
 
-            if (this.ogameProperties.SPY_FILTER_MOON) {
-                this.coordsToSpy.addAll(
-                        galaxyInfos.getPlanets()
-                                .stream()
-                                .filter(Objects::nonNull)
-                                .filter(gp -> gp.getMoon() != null)
-                                .filter(this::moonToSpy)
-                                .map(GalaxyPlanetsDto::getCoordinate)
-                                .map(c -> new CoordinateDto(c.getGalaxy(), c.getSystem(), c.getPosition(), OgameCst.MOON_TYPE))
-                                .collect(Collectors.toList())
-                );
+                if (this.ogameProperties.SPY_FILTER_MOON) {
+                    this.coordsToSpy.addAll(
+                            galaxyInfos.getPlanets()
+                                    .stream()
+                                    .filter(Objects::nonNull)
+                                    .filter(gp -> gp.getMoon() != null)
+                                    .filter(this::moonToSpy)
+                                    .map(GalaxyPlanetsDto::getCoordinate)
+                                    .map(c -> new CoordinateDto(c.getGalaxy(), c.getSystem(), c.getPosition(), OgameCst.MOON_TYPE))
+                                    .collect(Collectors.toList())
+                    );
+                }
             }
         }
     }
 
     @Scheduled(cron = "0/10 * * * * *") // every minute
     public void spy() {
-        if (!this.coordsToSpy.isEmpty()) {
+        if (this.ogameProperties.SPY_ENABLE && !this.coordsToSpy.isEmpty()) {
 
             while (!this.coordsToSpy.isEmpty() && this.slotsService.hasEnoughFreeSlots(1)
                     && this.index < this.coordsToSpy.size()) {

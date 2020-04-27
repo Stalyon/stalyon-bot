@@ -40,7 +40,9 @@ public class ExpeDebrisTheftService {
                 for (int j = this.ogameProperties.EXPE_THEFT_COORD_SYSTEM_MIN.get(i); j <= this.ogameProperties.EXPE_THEFT_COORD_SYSTEM_MAX.get(i); j++) {
                     GalaxyInfosDto galaxyInfos = this.ogameApiService.getGalaxyInfos(this.ogameProperties.EXPE_THEFT_COORD_GALAXY.get(i), j);
 
+                    // Si le nombre d'éclaireur requis est supérieur au nombre minimal paramétré, recyclage
                     if (galaxyInfos.getExpeditionDebris() != null && galaxyInfos.getExpeditionDebris().getPathfindersNeeded() >= this.ogameProperties.EXPE_THEFT_PATHFINDER_MIN) {
+                        // Recyclage
                         this.sendRecycler(galaxyInfos, this.ogameProperties.EXPE_THEFT_PLANET_ID.get(i));
                     }
                 }
@@ -49,9 +51,12 @@ public class ExpeDebrisTheftService {
     }
 
     private void sendRecycler(GalaxyInfosDto galaxyInfos, Integer planetId) {
+        // Vérification qu'il y a assez de slots et d'éclaireurs
         if (this.slotsService.hasEnoughFreeSlots(1)
                 && this.ogameApiService.getShips(planetId).getPathfinder() > 0) {
             List<FleetDto> fleets = this.ogameApiService.getFleets();
+
+            // Récupération des éclaireurs qui sont déjà en route pour ce débris
             Integer pathfinderInWork = fleets.stream()
                     .filter(fleet -> fleet.getMission().equals(OgameCst.RECYCLE_DEBRIS_FIELD)
                             && fleet.getDestination().getGalaxy().equals(galaxyInfos.getGalaxy())
@@ -62,6 +67,7 @@ public class ExpeDebrisTheftService {
                     .map(ShipsDto::getPathfinder)
                     .reduce(0, Integer::sum);
 
+            // Vérification que le nombre d'éclaireurs requis moins le nombre d'éclaireurs déjà en route est bien supérieur au nombre minimal paramétré
             if (galaxyInfos.getExpeditionDebris() != null
                     && galaxyInfos.getExpeditionDebris().getPathfindersNeeded() - pathfinderInWork >= this.ogameProperties.EXPE_THEFT_PATHFINDER_MIN
                     && this.slotsService.hasEnoughFreeSlots(1)) {

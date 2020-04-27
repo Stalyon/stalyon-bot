@@ -2,6 +2,7 @@ package com.stalyon.ogame.constants;
 
 public class OgameCst {
 
+    // Buildings
     public static final Integer METAL_MINE_ID = 1;
     public static final Integer CRYSTAL_MINE_ID = 2;
     public static final Integer DEUTERIUM_SYNTHESIZER_ID = 3;
@@ -13,7 +14,9 @@ public class OgameCst {
     public static final Integer SHIELDED_METAL_DEN_ID = 25;
     public static final Integer UNDERGROUND_CRYSTAL_DEN_ID = 26;
     public static final Integer SEABED_DEUTERIUM_DEN_ID = 27;
-    public static final Integer ALLIANCE_DEPOT_ID = 34; // Facilities
+
+    // Facilities
+    public static final Integer ALLIANCE_DEPOT_ID = 34;
     public static final Integer ROBOTICS_FACTORY_ID = 14;
     public static final Integer SHIPYARD_ID = 21;
     public static final Integer RESEARCH_LAB_ID = 31;
@@ -21,10 +24,14 @@ public class OgameCst {
     public static final Integer NANITE_FACTORY_ID = 15;
     public static final Integer TERRAFORMER_ID = 33;
     public static final Integer SPACE_DOCK_ID = 36;
-    public static final Integer LUNAR_BASE_ID = 41; // Moon facilities
+
+    // Moon facilities
+    public static final Integer LUNAR_BASE_ID = 41;
     public static final Integer SENSOR_PHALANX_ID = 42;
     public static final Integer JUMP_GATE_ID = 43;
-    public static final Integer ROCKET_LAUNCHER_ID = 401; // Defense
+
+    // Defense
+    public static final Integer ROCKET_LAUNCHER_ID = 401;
     public static final Integer LIGHT_LASER_ID = 402;
     public static final Integer HEAVY_LASER_ID = 403;
     public static final Integer GAUSS_CANNON_ID = 404;
@@ -34,7 +41,9 @@ public class OgameCst {
     public static final Integer LARGE_SHIELD_DOME_ID = 408;
     public static final Integer ANTI_BALLISTIC_MISSILES_ID = 502;
     public static final Integer INTERPLANETARY_MISSILES_ID = 503;
-    public static final Integer SMALL_CARGO_ID = 202; // Ships
+
+    // Ships
+    public static final Integer SMALL_CARGO_ID = 202;
     public static final Integer LARGE_CARGO_ID = 203;
     public static final Integer LIGHT_FIGHTER_ID = 204;
     public static final Integer HEAVY_FIGHTER_ID = 205;
@@ -51,7 +60,9 @@ public class OgameCst {
     public static final Integer CRAWLER_ID = 217;
     public static final Integer REAPER_ID = 218;
     public static final Integer PATHFINDER_ID = 219;
-    public static final Integer ESPIONAGE_TECHNOLOGY_ID = 106; // Research
+
+    // Researches
+    public static final Integer ESPIONAGE_TECHNOLOGY_ID = 106;
     public static final Integer COMPUTER_TECHNOLOGY_ID = 108;
     public static final Integer WEAPONS_TECHNOLOGY_ID = 109;
     public static final Integer SHIELDING_TECHNOLOGY_ID = 110;

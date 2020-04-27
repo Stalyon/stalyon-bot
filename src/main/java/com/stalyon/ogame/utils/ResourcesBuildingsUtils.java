@@ -1,54 +1,21 @@
 package com.stalyon.ogame.utils;
 
+import com.stalyon.ogame.config.OgameProperties;
 import com.stalyon.ogame.dto.PlanetsResourcesBuildingsDto;
 import com.stalyon.ogame.dto.PlanetsResourcesDto;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
+@Service
 public class ResourcesBuildingsUtils {
 
-    public static Boolean canBuildMetalMine(Integer metalMine, PlanetsResourcesDto resources) {
-        PlanetsResourcesDto cost = ResourcesBuildingsUtils.getMetalMineCost(metalMine);
-
-        return resources.getEnergy() > cost.getEnergy() && resources.getMetal() > cost.getMetal()
-                && resources.getCrystal() > cost.getCrystal();
-    }
-
-    public static Integer getEcoTime(PlanetsResourcesDto cost, PlanetsResourcesBuildingsDto resourcesBuildings, PlanetsResourcesDto resources,
-                                     Integer serverSpeed, Boolean hasGeologue) {
-        Integer totalMetal = cost.getMetal() - resources.getMetal();
-        Integer totalCrystal = cost.getCrystal() - resources.getCrystal();
-        Integer totalDeut = cost.getDeuterium() - resources.getDeuterium();
-
-        Integer metalEcoTime = 0;
-        Integer crystalEcoTime = 0;
-        Integer deutEcoTime = 0;
-
-        if (totalMetal > 0) {
-            metalEcoTime = (int) Math.round((double) totalMetal / (double) ResourcesBuildingsUtils.calculateMetalMineProduction(resourcesBuildings.getMetalMine(),
-                    serverSpeed, hasGeologue) * 60.);
-        }
-        if (totalCrystal > 0) {
-            crystalEcoTime = (int) Math.round((double) totalCrystal / (double) ResourcesBuildingsUtils.calculateCrystalMineProduction(resourcesBuildings.getCrystalMine(),
-                    serverSpeed, hasGeologue) * 60.);
-        }
-        if (totalDeut > 0) {
-            deutEcoTime = (int) Math.round((double) totalDeut / (double) ResourcesBuildingsUtils.calculateSyntheDeutProduction(resourcesBuildings.getDeuteriumSynthesizer(),
-                    serverSpeed, hasGeologue) * 60.);
-        }
-
-        return Math.max(metalEcoTime, Math.max(crystalEcoTime, deutEcoTime));
-    }
+    @Autowired
+    private OgameProperties ogameProperties;
 
     public static Boolean getMetalMineEnoughEnergy(Integer metalMine, PlanetsResourcesDto resources) {
         PlanetsResourcesDto cost = ResourcesBuildingsUtils.getMetalMineCost(metalMine);
 
         return resources.getEnergy() > cost.getEnergy();
-    }
-
-    public static Boolean canBuildCrystalMine(Integer crystalMine, PlanetsResourcesDto resources) {
-        PlanetsResourcesDto cost = ResourcesBuildingsUtils.getCrystalMineCost(crystalMine);
-
-        return resources.getEnergy() > cost.getEnergy() && resources.getMetal() > cost.getMetal()
-                && resources.getCrystal() > cost.getCrystal();
     }
 
     public static Boolean getCrystalMineEnoughEnergy(Integer crystalMine, PlanetsResourcesDto resources) {
@@ -57,30 +24,10 @@ public class ResourcesBuildingsUtils {
         return resources.getEnergy() > cost.getEnergy();
     }
 
-    public static Boolean canBuildDeutSynth(Integer deutSynth, PlanetsResourcesDto resources) {
-        PlanetsResourcesDto cost = ResourcesBuildingsUtils.getDeutSynthCost(deutSynth);
-
-        return resources.getEnergy() > cost.getEnergy() && resources.getMetal() > cost.getMetal()
-                && resources.getCrystal() > cost.getCrystal();
-    }
-
     public static Boolean getDeutSynthEnoughEnergy(Integer deutSynth, PlanetsResourcesDto resources) {
         PlanetsResourcesDto cost = ResourcesBuildingsUtils.getDeutSynthCost(deutSynth);
 
         return resources.getEnergy() > cost.getEnergy();
-    }
-
-    public static Boolean canBuildCentraleSolaire(Integer centraleSolaire, PlanetsResourcesDto resources) {
-        PlanetsResourcesDto cost = ResourcesBuildingsUtils.getCentraleSolaireCost(centraleSolaire);
-
-        return resources.getMetal() > cost.getMetal() && resources.getCrystal() > cost.getCrystal();
-    }
-
-    public static Boolean canBuildFusionReactor(Integer fusionReactor, PlanetsResourcesDto resources, Integer energyTech) {
-        PlanetsResourcesDto cost = ResourcesBuildingsUtils.getFusionReactorCost(fusionReactor, energyTech);
-
-        return resources.getMetal() > cost.getMetal() && resources.getCrystal() > cost.getCrystal()
-                && resources.getDeuterium() > cost.getDeuterium();
     }
 
     public static PlanetsResourcesDto getMetalMineCost(Integer metalMine) {
@@ -122,21 +69,6 @@ public class ResourcesBuildingsUtils {
         );
     }
 
-    public static PlanetsResourcesDto getFusionReactorCost(Integer fusionReactor, Integer energyTech) {
-        return new PlanetsResourcesDto(
-                (int) Math.round(900 * Math.pow(1.8, fusionReactor - 1)),
-                (int) Math.round(360 * Math.pow(1.8, fusionReactor - 1)),
-                (int) Math.round(180 * Math.pow(1.8, fusionReactor - 1)),
-                (int) Math.round(30 * fusionReactor * Math.pow((1.05 + Math.pow(energyTech, 0.01)), fusionReactor))
-        );
-    }
-
-    public static Boolean notEnoughEnergy(PlanetsResourcesBuildingsDto resourcesBuildings, PlanetsResourcesDto resources, Boolean autoBuildDeut) {
-        return !(ResourcesBuildingsUtils.getMetalMineEnoughEnergy(resourcesBuildings.getMetalMine() + 1, resources)
-                || ResourcesBuildingsUtils.getCrystalMineEnoughEnergy(resourcesBuildings.getCrystalMine() + 1, resources)
-                || autoBuildDeut && ResourcesBuildingsUtils.getDeutSynthEnoughEnergy(resourcesBuildings.getDeuteriumSynthesizer() + 1, resources));
-    }
-
     private static Integer calculateMetalMineProduction(Integer metalMine, Integer serverSpeed, Boolean hasGeologue) {
         Double geologue = hasGeologue ? 1.1 : 1;
         Integer prodBase = 30 * serverSpeed;
@@ -157,5 +89,86 @@ public class ResourcesBuildingsUtils {
         // TODO Pierre: calculer la production (possibilité de récupérer la prod via le bot ?)
 
         return 0;
+    }
+
+    public Integer getEcoTime(PlanetsResourcesDto cost, PlanetsResourcesBuildingsDto resourcesBuildings, PlanetsResourcesDto resources) {
+        Integer totalMetal = cost.getMetal() - resources.getMetal();
+        Integer totalCrystal = cost.getCrystal() - resources.getCrystal();
+        Integer totalDeut = cost.getDeuterium() - resources.getDeuterium();
+
+        Integer metalEcoTime = 0;
+        Integer crystalEcoTime = 0;
+        Integer deutEcoTime = 0;
+
+        if (totalMetal > 0) {
+            metalEcoTime = (int) Math.round((double) totalMetal / (double) ResourcesBuildingsUtils.calculateMetalMineProduction(resourcesBuildings.getMetalMine(),
+                    this.ogameProperties.SERVER_SPEED, this.ogameProperties.HAS_GEOLOGUE) * 60.);
+        }
+        if (totalCrystal > 0) {
+            crystalEcoTime = (int) Math.round((double) totalCrystal / (double) ResourcesBuildingsUtils.calculateCrystalMineProduction(resourcesBuildings.getCrystalMine(),
+                    this.ogameProperties.SERVER_SPEED, this.ogameProperties.HAS_GEOLOGUE) * 60.);
+        }
+        if (totalDeut > 0) {
+            deutEcoTime = (int) Math.round((double) totalDeut / (double) ResourcesBuildingsUtils.calculateSyntheDeutProduction(resourcesBuildings.getDeuteriumSynthesizer(),
+                    this.ogameProperties.SERVER_SPEED, this.ogameProperties.HAS_GEOLOGUE) * 60.);
+        }
+
+        return Math.max(metalEcoTime, Math.max(crystalEcoTime, deutEcoTime));
+    }
+
+    public Boolean canBuildMetalMine(Integer metalMine, PlanetsResourcesDto resources) {
+        PlanetsResourcesDto cost = ResourcesBuildingsUtils.getMetalMineCost(metalMine + 1);
+
+        return metalMine < this.ogameProperties.MINES_MINE_METAL_MAX
+                && resources.getEnergy() > cost.getEnergy() && resources.getMetal() > cost.getMetal()
+                && resources.getCrystal() > cost.getCrystal();
+    }
+
+    public Boolean canBuildCrystalMine(Integer crystalMine, PlanetsResourcesDto resources) {
+        PlanetsResourcesDto cost = ResourcesBuildingsUtils.getCrystalMineCost(crystalMine + 1);
+
+        return crystalMine < this.ogameProperties.MINES_MINE_CRISTAL_MAX
+                && resources.getEnergy() > cost.getEnergy() && resources.getMetal() > cost.getMetal()
+                && resources.getCrystal() > cost.getCrystal();
+    }
+
+    public Boolean canBuildDeutSynth(Integer deutSynth, PlanetsResourcesDto resources) {
+        PlanetsResourcesDto cost = ResourcesBuildingsUtils.getDeutSynthCost(deutSynth + 1);
+
+        return deutSynth < this.ogameProperties.MINES_SYNTHE_DEUT_MAX
+                && resources.getEnergy() > cost.getEnergy() && resources.getMetal() > cost.getMetal()
+                && resources.getCrystal() > cost.getCrystal();
+    }
+
+    public Boolean canBuildCentraleSolaire(Integer centraleSolaire, PlanetsResourcesDto resources) {
+        PlanetsResourcesDto cost = ResourcesBuildingsUtils.getCentraleSolaireCost(centraleSolaire + 1);
+
+        return centraleSolaire < this.ogameProperties.MINES_SOLAR_PLANT_MAX
+                && resources.getMetal() > cost.getMetal()
+                && resources.getCrystal() > cost.getCrystal();
+    }
+
+    public Boolean canBuildFusionReactor(Integer fusionReactor, PlanetsResourcesDto resources) {
+        PlanetsResourcesDto cost = this.getFusionReactorCost(fusionReactor + 1);
+
+        return fusionReactor < this.ogameProperties.MINES_REACTOR_FUSION_MAX
+                && resources.getMetal() > cost.getMetal()
+                && resources.getCrystal() > cost.getCrystal()
+                && resources.getDeuterium() > cost.getDeuterium();
+    }
+
+    public PlanetsResourcesDto getFusionReactorCost(Integer fusionReactor) {
+        return new PlanetsResourcesDto(
+                (int) Math.round(900 * Math.pow(1.8, fusionReactor - 1)),
+                (int) Math.round(360 * Math.pow(1.8, fusionReactor - 1)),
+                (int) Math.round(180 * Math.pow(1.8, fusionReactor - 1)),
+                (int) Math.round(30 * fusionReactor * Math.pow((1.05 + Math.pow(this.ogameProperties.ENERGY_TECH, 0.01)), fusionReactor))
+        );
+    }
+
+    public Boolean notEnoughEnergy(PlanetsResourcesBuildingsDto resourcesBuildings, PlanetsResourcesDto resources) {
+        return !(resourcesBuildings.getMetalMine() < this.ogameProperties.MINES_MINE_METAL_MAX && ResourcesBuildingsUtils.getMetalMineEnoughEnergy(resourcesBuildings.getMetalMine() + 1, resources)
+                || resourcesBuildings.getCrystalMine() < this.ogameProperties.MINES_MINE_CRISTAL_MAX && ResourcesBuildingsUtils.getCrystalMineEnoughEnergy(resourcesBuildings.getCrystalMine() + 1, resources)
+                || resourcesBuildings.getDeuteriumSynthesizer() < this.ogameProperties.MINES_SYNTHE_DEUT_MAX && ResourcesBuildingsUtils.getDeutSynthEnoughEnergy(resourcesBuildings.getDeuteriumSynthesizer() + 1, resources));
     }
 }

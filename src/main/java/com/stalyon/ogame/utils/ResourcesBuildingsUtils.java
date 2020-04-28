@@ -15,19 +15,19 @@ public class ResourcesBuildingsUtils {
     public static Boolean getMetalMineEnoughEnergy(Integer metalMine, PlanetsResourcesDto resources) {
         PlanetsResourcesDto cost = ResourcesBuildingsUtils.getMetalMineCost(metalMine);
 
-        return resources.getEnergy() > cost.getEnergy();
+        return resources.getEnergy() >= cost.getEnergy();
     }
 
     public static Boolean getCrystalMineEnoughEnergy(Integer crystalMine, PlanetsResourcesDto resources) {
         PlanetsResourcesDto cost = ResourcesBuildingsUtils.getCrystalMineCost(crystalMine);
 
-        return resources.getEnergy() > cost.getEnergy();
+        return resources.getEnergy() >= cost.getEnergy();
     }
 
     public static Boolean getDeutSynthEnoughEnergy(Integer deutSynth, PlanetsResourcesDto resources) {
         PlanetsResourcesDto cost = ResourcesBuildingsUtils.getDeutSynthCost(deutSynth);
 
-        return resources.getEnergy() > cost.getEnergy();
+        return resources.getEnergy() >= cost.getEnergy();
     }
 
     public static PlanetsResourcesDto getMetalMineCost(Integer metalMine) {
@@ -120,41 +120,41 @@ public class ResourcesBuildingsUtils {
         PlanetsResourcesDto cost = ResourcesBuildingsUtils.getMetalMineCost(metalMine + 1);
 
         return metalMine < this.ogameProperties.MINES_MINE_METAL_MAX
-                && resources.getEnergy() > cost.getEnergy() && resources.getMetal() > cost.getMetal()
-                && resources.getCrystal() > cost.getCrystal();
+                && resources.getEnergy() >= cost.getEnergy() && resources.getMetal() >= cost.getMetal()
+                && resources.getCrystal() >= cost.getCrystal();
     }
 
     public Boolean canBuildCrystalMine(Integer crystalMine, PlanetsResourcesDto resources) {
         PlanetsResourcesDto cost = ResourcesBuildingsUtils.getCrystalMineCost(crystalMine + 1);
 
         return crystalMine < this.ogameProperties.MINES_MINE_CRISTAL_MAX
-                && resources.getEnergy() > cost.getEnergy() && resources.getMetal() > cost.getMetal()
-                && resources.getCrystal() > cost.getCrystal();
+                && resources.getEnergy() >= cost.getEnergy() && resources.getMetal() >= cost.getMetal()
+                && resources.getCrystal() >= cost.getCrystal();
     }
 
     public Boolean canBuildDeutSynth(Integer deutSynth, PlanetsResourcesDto resources) {
         PlanetsResourcesDto cost = ResourcesBuildingsUtils.getDeutSynthCost(deutSynth + 1);
 
         return deutSynth < this.ogameProperties.MINES_SYNTHE_DEUT_MAX
-                && resources.getEnergy() > cost.getEnergy() && resources.getMetal() > cost.getMetal()
-                && resources.getCrystal() > cost.getCrystal();
+                && resources.getEnergy() >= cost.getEnergy() && resources.getMetal() >= cost.getMetal()
+                && resources.getCrystal() >= cost.getCrystal();
     }
 
     public Boolean canBuildCentraleSolaire(Integer centraleSolaire, PlanetsResourcesDto resources) {
         PlanetsResourcesDto cost = ResourcesBuildingsUtils.getCentraleSolaireCost(centraleSolaire + 1);
 
         return centraleSolaire < this.ogameProperties.MINES_SOLAR_PLANT_MAX
-                && resources.getMetal() > cost.getMetal()
-                && resources.getCrystal() > cost.getCrystal();
+                && resources.getMetal() >= cost.getMetal()
+                && resources.getCrystal() >= cost.getCrystal();
     }
 
     public Boolean canBuildFusionReactor(Integer fusionReactor, PlanetsResourcesDto resources) {
         PlanetsResourcesDto cost = this.getFusionReactorCost(fusionReactor + 1);
 
         return fusionReactor < this.ogameProperties.MINES_REACTOR_FUSION_MAX
-                && resources.getMetal() > cost.getMetal()
-                && resources.getCrystal() > cost.getCrystal()
-                && resources.getDeuterium() > cost.getDeuterium();
+                && resources.getMetal() >= cost.getMetal()
+                && resources.getCrystal() >= cost.getCrystal()
+                && resources.getDeuterium() >= cost.getDeuterium();
     }
 
     public PlanetsResourcesDto getFusionReactorCost(Integer fusionReactor) {

@@ -41,7 +41,7 @@ public class MinesService {
 
     private List<Integer> waittingClusterizedPlanets = new ArrayList<>();
 
-    @Scheduled(cron = "0 0/2 * * * *") // every 2-minutes
+    @Scheduled(cron = "* * * * * *") // every 2-minutes
     public void autoBuild() {
         if (this.ogameProperties.MINES_AUTO_BUILD_ENABLE) {
             // Récupération des planètes
@@ -380,7 +380,7 @@ public class MinesService {
     private Boolean buildFacility(PlanetDto planet, PlanetsResourcesDto resources, BuildFacilityHelperDto buildFacilityHelper) {
         PlanetsResourcesDto cost = this.ogameApiService.getPrice(buildFacilityHelper.getNextFacility(), buildFacilityHelper.getLvlFacility());
 
-        if (cost.getMetal() < resources.getMetal() && cost.getCrystal() < resources.getCrystal() && cost.getDeuterium() < resources.getDeuterium()) {
+        if (cost.getMetal() <= resources.getMetal() && cost.getCrystal() <= resources.getCrystal() && cost.getDeuterium() <= resources.getDeuterium()) {
             MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
             this.ogameApiService.buildBuilding(planet.getId(), buildFacilityHelper.getNextFacility(), formData);
 

@@ -6,8 +6,6 @@ import com.stalyon.ogame.dto.reponse.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -29,12 +27,7 @@ public class OgameApiService {
     @Autowired
     private OgameProperties ogameProperties;
 
-    private RestTemplate restTemplate;
-
-    @EventListener(ApplicationReadyEvent.class)
-    public void init() {
-        this.restTemplate = new RestTemplate();
-    }
+    private RestTemplate restTemplate = new RestTemplate();
 
     public Boolean isUnderAttack() {
         ResponseEntity<IsUnderAttackResponseDto> response = this.restTemplate.getForEntity(

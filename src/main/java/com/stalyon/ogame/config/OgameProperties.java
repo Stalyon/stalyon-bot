@@ -168,6 +168,22 @@ public class OgameProperties {
     @Value(("${mines.auto.build.transport.stockage}"))
     public Integer MINES_TRANSPORT_STOCKAGE;
 
+    // Facilities
+    @Value("${buildinds.facilities.robots.min}")
+    public Integer BUILDINGS_FACILITIES_ROBOTS_MIN;
+
+    @Value("${buildings.facilities.nanite.min}")
+    public Integer BUILDINGS_FACILITIES_NANITE_MIN;
+
+    @Value("${buildings.facilities.hangar.metal.min}")
+    public Integer BUILDINGS_FACILITIES_HANGAR_METAL_MIN;
+
+    @Value("${buildings.facilities.hangar.cristal.min}")
+    public Integer BUILDINGS_FACILITIES_HANGAR_CRISTAL_MIN;
+
+    @Value("${buildings.facilities.hangar.deut.min}")
+    public Integer BUILDINGS_FACILITIES_HANGAR_DEUT_MIN;
+
     // Compte
     @Value("${compte.geologue}")
     public Boolean HAS_GEOLOGUE;

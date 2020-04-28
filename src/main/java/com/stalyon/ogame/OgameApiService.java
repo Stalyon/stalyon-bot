@@ -103,6 +103,14 @@ public class OgameApiService {
         return response.getBody().getResult();
     }
 
+    public FacilitiesDto getPlanetsFacilities(PlanetDto planetDto) {
+        ResponseEntity<FacilitiesResponseDto> response = restTemplate.getForEntity(
+                this.ogameProperties.BOT_URL + "/planets/" + planetDto.getId()
+                        + "/facilities", FacilitiesResponseDto.class);
+
+        return response.getBody().getResult();
+    }
+
     public UserInfosDto getUserInfos() {
         ResponseEntity<UserInfosResponseDto> response = restTemplate.getForEntity(
                 this.ogameProperties.BOT_URL + "/user-infos", UserInfosResponseDto.class);
@@ -127,6 +135,13 @@ public class OgameApiService {
     public List<AttackDto> getAttacks() {
         ResponseEntity<AttacksResponseDto> response = restTemplate.getForEntity(
                 this.ogameProperties.BOT_URL + "/attacks", AttacksResponseDto.class);
+
+        return response.getBody().getResult();
+    }
+
+    public PlanetsResourcesDto getPrice(Integer buildingId, Integer lvl) {
+        ResponseEntity<PlanetsResourcesResponseDto> response = restTemplate.getForEntity(
+                this.ogameProperties.BOT_URL + "/price/" + buildingId + "/" + lvl, PlanetsResourcesResponseDto.class);
 
         return response.getBody().getResult();
     }

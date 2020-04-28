@@ -355,23 +355,23 @@ public class MinesService {
         FacilitiesDto facilities = this.ogameApiService.getPlanetsFacilities(planet);
 
         if (facilities.getRoboticsFactory() < this.ogameProperties.BUILDINGS_FACILITIES_ROBOTS_MIN) {
-            return new BuildFacilityHelperDto(OgameCst.ROBOTICS_FACTORY_ID, facilities.getRoboticsFactory() +1);
+            return new BuildFacilityHelperDto(OgameCst.ROBOTICS_FACTORY_ID, facilities.getRoboticsFactory() + 1);
         }
 
         if (facilities.getNaniteFactory() < this.ogameProperties.BUILDINGS_FACILITIES_NANITE_MIN) {
-            return new BuildFacilityHelperDto(OgameCst.NANITE_FACTORY_ID, facilities.getNaniteFactory() +1);
+            return new BuildFacilityHelperDto(OgameCst.NANITE_FACTORY_ID, facilities.getNaniteFactory() + 1);
         }
 
         if (resourcesBuildings.getMetalStorage() < this.ogameProperties.BUILDINGS_FACILITIES_HANGAR_METAL_MIN) {
-            return new BuildFacilityHelperDto(OgameCst.METAL_STORAGE_ID, resourcesBuildings.getMetalStorage() +1);
+            return new BuildFacilityHelperDto(OgameCst.METAL_STORAGE_ID, resourcesBuildings.getMetalStorage() + 1);
         }
 
         if (resourcesBuildings.getCrystalStorage() < this.ogameProperties.BUILDINGS_FACILITIES_HANGAR_CRISTAL_MIN) {
-            return new BuildFacilityHelperDto(OgameCst.CRYSTAL_STORAGE_ID, resourcesBuildings.getCrystalStorage() +1);
+            return new BuildFacilityHelperDto(OgameCst.CRYSTAL_STORAGE_ID, resourcesBuildings.getCrystalStorage() + 1);
         }
 
         if (resourcesBuildings.getDeuteriumTank() < this.ogameProperties.BUILDINGS_FACILITIES_HANGAR_DEUT_MIN) {
-            return new BuildFacilityHelperDto(OgameCst.DEUTERIUM_TANK_ID, resourcesBuildings.getDeuteriumTank() +1);
+            return new BuildFacilityHelperDto(OgameCst.DEUTERIUM_TANK_ID, resourcesBuildings.getDeuteriumTank() + 1);
         }
 
         return null;
@@ -385,7 +385,7 @@ public class MinesService {
             this.ogameApiService.buildBuilding(planet.getId(), buildFacilityHelper.getNextFacility(), formData);
 
             this.messageService.logInfo("Construction " + this.getFacilityName(buildFacilityHelper.getNextFacility())
-                    + " " + (buildFacilityHelper.getLvlFacility() + 1) + " sur " + planet.getName(), Boolean.FALSE, Boolean.FALSE);
+                    + " " + buildFacilityHelper.getLvlFacility() + " sur " + planet.getName(), Boolean.FALSE, Boolean.FALSE);
             return Boolean.TRUE;
         }
 

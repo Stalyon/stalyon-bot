@@ -169,7 +169,7 @@ public class OgameProperties {
     public Integer MINES_TRANSPORT_STOCKAGE;
 
     // Facilities
-    @Value("${buildinds.facilities.robots.min}")
+    @Value("${buildings.facilities.robots.min}")
     public Integer BUILDINGS_FACILITIES_ROBOTS_MIN;
 
     @Value("${buildings.facilities.nanite.min}")
@@ -183,6 +183,9 @@ public class OgameProperties {
 
     @Value("${buildings.facilities.hangar.deut.min}")
     public Integer BUILDINGS_FACILITIES_HANGAR_DEUT_MIN;
+
+    @Value("${buildings.facilities.labo.min}")
+    public Integer BUILDINGS_FACILITIES_LABO_MIN;
 
     // Compte
     @Value("${compte.geologue}")

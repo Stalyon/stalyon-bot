@@ -374,6 +374,10 @@ public class MinesService {
             return new BuildFacilityHelperDto(OgameCst.DEUTERIUM_TANK_ID, resourcesBuildings.getDeuteriumTank() + 1);
         }
 
+        if (facilities.getResearchLab() < this.ogameProperties.BUILDINGS_FACILITIES_LABO_MIN) {
+            return new BuildFacilityHelperDto(OgameCst.RESEARCH_LAB_ID, facilities.getResearchLab() + 1);
+        }
+
         return null;
     }
 
@@ -403,6 +407,8 @@ public class MinesService {
             return "Hangar Cristal";
         } else if (buildingId.equals(OgameCst.DEUTERIUM_TANK_ID)) {
             return "Hangar Deut";
+        } else if (buildingId.equals(OgameCst.RESEARCH_LAB_ID)) {
+            return "Laboratoire";
         }
         return "Batiment";
     }

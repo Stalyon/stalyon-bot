@@ -65,7 +65,7 @@ public class InfosCompteService {
             long nbTransport = fleets.stream().filter(f -> f.getMission().equals(OgameCst.TRANSPORT)).count();
             long nbExpe = fleets.stream().filter(f -> f.getMission().equals(OgameCst.EXPEDITION)).count();
             content.add("  --> Nombre de flottes : " + fleets.size() + " - Attaques : " + nbAttack
-                    + " - Transports : " + nbTransport + " Expéditions : " + nbExpe);
+                    + " - Transports : " + nbTransport + " - Expéditions : " + nbExpe);
             content.add("------");
 
             messageService.logInfo(String.join("\n", content), Boolean.FALSE, Boolean.FALSE);

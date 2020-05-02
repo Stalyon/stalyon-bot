@@ -41,7 +41,7 @@ public class MinesService {
 
     private List<Integer> waittingClusterizedPlanets = new ArrayList<>();
 
-    @Scheduled(cron = "* * * * * *") // every 2-minutes
+    @Scheduled(cron = "0 0/2 * * * *") // every 2-minutes
     public void autoBuild() {
         if (this.ogameProperties.MINES_AUTO_BUILD_ENABLE) {
             // Récupération des planètes
@@ -248,9 +248,9 @@ public class MinesService {
                     .filter(pc -> pc.getEcoTime() != null)
                     .filter(pc -> pc.getEcoTime() > 0)
                     .filter(pc -> !this.waittingClusterizedPlanets.contains(pc.getPlanet().getId()))
-                    .filter(pc -> pc.getCost().getMetal() < this.totalMetalPlanets(planetsClusterized)
-                            && pc.getCost().getCrystal() < this.totalCrystalPlanets(planetsClusterized)
-                            && pc.getCost().getDeuterium() < this.totalDeutPlanets(planetsClusterized))
+                    .filter(pc -> pc.getCost().getMetal() <= this.totalMetalPlanets(planetsClusterized)
+                            && pc.getCost().getCrystal() <= this.totalCrystalPlanets(planetsClusterized)
+                            && pc.getCost().getDeuterium() <= this.totalDeutPlanets(planetsClusterized))
                     .sorted(Comparator.comparing(PlanetClusterizedHelperDto::getEcoTime))
                     .collect(Collectors.toList());
 
@@ -291,7 +291,7 @@ public class MinesService {
                     formData.add("crystal", crystalToSend.toString());
                     formData.add("deuterium", deutToSend.toString());
 
-                    if (metalToSend > 0 || crystalToSend > 0) {
+                    if (metalToSend > 0 || crystalToSend > 0 || deutToSend > 0) {
                         ShipsDto ships = this.ogameApiService.getShips(p.getPlanet().getId());
 
                         if (ships.getLargeCargo() >= nbLargeCargo) {
@@ -378,12 +378,35 @@ public class MinesService {
             return new BuildFacilityHelperDto(OgameCst.RESEARCH_LAB_ID, facilities.getResearchLab() + 1);
         }
 
+        if (facilities.getShipyard() < this.ogameProperties.BUILDINGS_FACILITIES_CHANTIER_SPATIAL_MIN) {
+            return new BuildFacilityHelperDto(OgameCst.SHIPYARD_ID, facilities.getShipyard() + 1);
+        }
+
         return null;
     }
 
     private Boolean buildFacility(PlanetDto planet, PlanetsResourcesDto resources, BuildFacilityHelperDto buildFacilityHelper) {
         PlanetsResourcesDto cost = this.ogameApiService.getPrice(buildFacilityHelper.getNextFacility(), buildFacilityHelper.getLvlFacility());
 
+        // S'il s'agit du chantier spatial, vérification qu'il n'y ait pas de vaisseaux / défenses en cours de production
+        if (buildFacilityHelper.getNextFacility().equals(OgameCst.SHIPYARD_ID)) {
+            List<ShipyardProductionDto> shipyardProduction = this.ogameApiService.gePlanetsProduction(planet);
+
+            if (shipyardProduction != null && !shipyardProduction.isEmpty()) {
+                return Boolean.FALSE;
+            }
+        }
+
+        // S'il s'agit du labo, vérification qu'il n'y ait pas de recherche en cours
+        if (buildFacilityHelper.getNextFacility().equals(OgameCst.RESEARCH_LAB_ID)) {
+            PlanetsConstructionsDto constructions = this.ogameApiService.getPlanetsConstructions(planet);
+
+            if (constructions != null && !constructions.getResearchID().equals(0)) {
+                return Boolean.FALSE;
+            }
+        }
+
+        // Vérification qu'il y a assez de ressources
         if (cost.getMetal() <= resources.getMetal() && cost.getCrystal() <= resources.getCrystal() && cost.getDeuterium() <= resources.getDeuterium()) {
             MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
             this.ogameApiService.buildBuilding(planet.getId(), buildFacilityHelper.getNextFacility(), formData);
@@ -409,6 +432,8 @@ public class MinesService {
             return "Hangar Deut";
         } else if (buildingId.equals(OgameCst.RESEARCH_LAB_ID)) {
             return "Laboratoire";
+        } else if (buildingId.equals(OgameCst.SHIPYARD_ID)) {
+            return "Chantier Spatial";
         }
         return "Batiment";
     }

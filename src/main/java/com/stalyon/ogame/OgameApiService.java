@@ -65,6 +65,13 @@ public class OgameApiService {
         return response.getBody().getResult();
     }
 
+    public PlanetDto getPlanet(Integer planetId) {
+        ResponseEntity<PlanetsPlanetResponseDto> response = restTemplate.getForEntity(
+                this.ogameProperties.BOT_URL + "/planets/" + planetId, PlanetsPlanetResponseDto.class);
+
+        return response.getBody().getResult();
+    }
+
     public List<PlanetDto> getPlanets() {
         ResponseEntity<PlanetsResponseDto> response = restTemplate.getForEntity(
                 this.ogameProperties.BOT_URL + "/planets", PlanetsResponseDto.class);
@@ -97,9 +104,17 @@ public class OgameApiService {
     }
 
     public FacilitiesDto getPlanetsFacilities(PlanetDto planetDto) {
-        ResponseEntity<FacilitiesResponseDto> response = restTemplate.getForEntity(
+        ResponseEntity<PlanetsFacilitiesResponseDto> response = restTemplate.getForEntity(
                 this.ogameProperties.BOT_URL + "/planets/" + planetDto.getId()
-                        + "/facilities", FacilitiesResponseDto.class);
+                        + "/facilities", PlanetsFacilitiesResponseDto.class);
+
+        return response.getBody().getResult();
+    }
+
+    public List<ShipyardProductionDto> gePlanetsProduction(PlanetDto planet) {
+        ResponseEntity<PlanetsProductionResponseDto> response = restTemplate.getForEntity(
+                this.ogameProperties.BOT_URL + "/planets/" + planet.getId()
+                        + "/production", PlanetsProductionResponseDto.class);
 
         return response.getBody().getResult();
     }
@@ -139,6 +154,13 @@ public class OgameApiService {
         return response.getBody().getResult();
     }
 
+    public ResearchesDto getResearches() {
+        ResponseEntity<GetResearchResponseDto> response = restTemplate.getForEntity(
+                this.ogameProperties.BOT_URL + "/get-research", GetResearchResponseDto.class);
+
+        return response.getBody().getResult();
+    }
+
     public void buildBuilding(Integer destinationId, Integer buildingId, MultiValueMap<String, String> formData) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
@@ -153,6 +175,26 @@ public class OgameApiService {
             Matcher matcher = pattern.matcher(e.getMessage());
             if (matcher.find()) {
                 LOGGER.error("Erreur lors de la construction d'un bâtiment : " + matcher.group(1));
+            } else {
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
+    }
+
+    public void buildTechnology(Integer destinationId, Integer technologyId, MultiValueMap<String, String> formData) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(formData, headers);
+
+        try {
+            restTemplate.postForEntity(this.ogameProperties.BOT_URL + "/planets/" + destinationId + "/build/technology/" + technologyId,
+                    request, SendFleetResponseDto.class);
+        } catch (Exception e) {
+            Pattern pattern = Pattern.compile("\"Message\":\"(.*)\",\"Result");
+            Matcher matcher = pattern.matcher(e.getMessage());
+            if (matcher.find()) {
+                LOGGER.error("Erreur lors de la construction d'une technologie : " + matcher.group(1));
             } else {
                 LOGGER.error(e.getMessage(), e);
             }

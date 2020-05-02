@@ -3,13 +3,12 @@ package com.stalyon.ogame.dto.reponse;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.stalyon.ogame.dto.FacilitiesDto;
 
-public class FacilitiesResponseDto extends ResponseDto {
-
+public class PlanetsFacilitiesResponseDto extends ResponseDto {
 
     @JsonProperty("Result")
     private FacilitiesDto result;
 
-    public FacilitiesResponseDto() {
+    public PlanetsFacilitiesResponseDto() {
         // Do nothing
     }
 

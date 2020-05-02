@@ -187,6 +187,9 @@ public class OgameProperties {
     @Value("${buildings.facilities.labo.min}")
     public Integer BUILDINGS_FACILITIES_LABO_MIN;
 
+    @Value("${buildings.facilities.chantierspatial.min}")
+    public Integer BUILDINGS_FACILITIES_CHANTIER_SPATIAL_MIN;
+
     // Compte
     @Value("${compte.geologue}")
     public Boolean HAS_GEOLOGUE;
@@ -252,4 +255,26 @@ public class OgameProperties {
 
     @Value("${discord.bot.guild.id}")
     public String DISCORD_BOT_GUILD;
+
+    // Recherches
+    @Value("${recherches.build.auto}")
+    public Boolean RECHERCHES_BUILD_AUTO;
+
+    @Value("${recherches.build.planet}")
+    public Integer RECHERCHES_BUILD_PLANET_ID;
+
+    @Value("${recherches.build.queue.techno.id}")
+    public List<Integer> RECHERCHES_BUILD_QUEUE_TECHNOS_ID;
+
+    @Value("${recherches.build.queue.techno.lvl}")
+    public List<Integer> RECHERCHES_BUILD_QUEUE_TECHNOS_LVL;
+
+    @Value("${recherches.transport.auto}")
+    public Boolean RECHERCHES_TRANSPORT_AUTO;
+
+    @Value("${recherches.transport.planets.clusterized}")
+    public List<Integer> RECHERCHES_TRANSPORT_PLANETS_CLUSTERIZED;
+
+    @Value("${recherches.transport.stockage}")
+    public Integer RECHERCHES_TRANSPORT_STOCKAGE;
 }

@@ -277,4 +277,42 @@ public class OgameProperties {
 
     @Value("${recherches.transport.stockage}")
     public Integer RECHERCHES_TRANSPORT_STOCKAGE;
+
+    // Ghost
+    @Value("${ghost.auto}")
+    public Boolean GHOST_AUTO;
+
+    @Value("${ghost.time.hour.from}")
+    public List<Integer> GHOST_TIME_HOUR_FROM;
+
+    @Value("${ghost.time.minute.from}")
+    public List<Integer> GHOST_TIME_MINUTE_FROM;
+
+    @Value("${ghost.time.hour.to}")
+    public List<Integer> GHOST_TIME_HOUR_TO;
+
+    @Value("${ghost.time.minute.to}")
+    public List<Integer> GHOST_TIME_MINUTE_TO;
+
+    @Value("${ghost.planet.from}")
+    public List<Integer> GHOST_PLANET_FROM;
+
+    @Value("${ghost.coord.to.galaxy}")
+    public List<Integer> GHOST_COORD_TO_GALAXY;
+
+    @Value("${ghost.coord.to.system}")
+    public List<Integer> GHOST_COORD_TO_SYSTEM;
+
+    @Value("${ghost.coord.to.position}")
+    public List<Integer> GHOST_COORD_TO_POSITION;
+
+    @Value("${ghost.coord.to.type}")
+    public List<Integer> GHOST_COORD_TO_TYPE;
+
+    @Value("${ghost.mission}")
+    public List<Integer> GHOST_MISSION;
+
+    @Value("${ghost.speed}")
+    public List<Integer> GHOST_SPEED;
+
 }

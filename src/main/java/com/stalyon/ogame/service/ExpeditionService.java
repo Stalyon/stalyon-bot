@@ -24,6 +24,9 @@ import java.util.List;
 public class ExpeditionService {
 
     @Autowired
+    private GhostService ghostService;
+
+    @Autowired
     private OgameApiService ogameApiService;
 
     @Autowired
@@ -40,7 +43,7 @@ public class ExpeditionService {
 
     @Scheduled(cron = "40 * * * * *") // every minute
     public void launchExpedition() {
-        if (this.ogameProperties.EXPEDITION_ENABLE) {
+        if (this.ogameProperties.EXPEDITION_ENABLE && !this.ghostService.isAfkPeriod(Boolean.TRUE)) {
             SlotsDto slots = this.ogameApiService.getSlots();
 
             while (!slots.getExpInUse().equals(slots.getExpTotal())) {
@@ -53,7 +56,7 @@ public class ExpeditionService {
 
     @Scheduled(cron = "10 1/3 * * * *") // every 3-minutes
     public void checkExpeditionDebris() {
-        if (this.ogameProperties.EXPEDITION_ENABLE) {
+        if (this.ogameProperties.EXPEDITION_ENABLE && !this.ghostService.isGhosted()) {
             GalaxyInfosDto galaxyInfos = this.ogameApiService.getGalaxyInfos(this.ogameProperties.EXPEDITION_GALAXY, this.ogameProperties.EXPEDITION_SYSTEM);
             List<FleetDto> fleets = this.ogameApiService.getFleets();
 

@@ -24,6 +24,9 @@ import java.util.stream.Collectors;
 public class AttaquesService {
 
     @Autowired
+    private GhostService ghostService;
+
+    @Autowired
     private OgameApiService ogameApiService;
 
     @Autowired
@@ -44,7 +47,7 @@ public class AttaquesService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void scanSystems() {
-        if (this.ogameProperties.ATTAQUES_AUTO_ENABLE) {
+        if (this.ogameProperties.ATTAQUES_AUTO_ENABLE && !this.ghostService.isAfkPeriod(Boolean.FALSE)) {
             this.index++;
             this.inactivesToSpy = new ArrayList<>();
             this.inactivesToSort = new ArrayList<>();
@@ -90,7 +93,7 @@ public class AttaquesService {
 
     @Scheduled(cron = "0/30 * * * * *") // every 30-seconds
     public void spyOrAttackInactives() {
-        if (this.ogameProperties.ATTAQUES_AUTO_ENABLE && !this.isInUse) {
+        if (this.ogameProperties.ATTAQUES_AUTO_ENABLE && !this.isInUse && !this.ghostService.isAfkPeriod(Boolean.TRUE)) {
             this.isInUse = Boolean.TRUE;
 
             if (this.inactivesToSpy.isEmpty() && (!this.inactivesToAttack.isEmpty() || !this.inactivesToSort.isEmpty())) {

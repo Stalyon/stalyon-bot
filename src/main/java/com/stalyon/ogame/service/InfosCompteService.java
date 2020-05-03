@@ -18,6 +18,9 @@ import java.util.List;
 public class InfosCompteService {
 
     @Autowired
+    private GhostService ghostService;
+
+    @Autowired
     private OgameApiService ogameApiService;
 
     @Autowired
@@ -28,7 +31,7 @@ public class InfosCompteService {
 
     @Scheduled(cron = "30 0 0/2 * * *") // every 2-hours
     public void infoCompte() {
-        if (this.ogameProperties.INFOS_COMPTE_ENABLE) {
+        if (this.ogameProperties.INFOS_COMPTE_ENABLE && !ghostService.isAfkPeriod(Boolean.FALSE)) {
             // Récupération des infos de l'utilisateur
             UserInfosDto userInfos = this.ogameApiService.getUserInfos();
             List<String> content = new ArrayList<>();

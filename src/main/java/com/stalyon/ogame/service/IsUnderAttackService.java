@@ -24,6 +24,9 @@ import java.util.List;
 public class IsUnderAttackService {
 
     @Autowired
+    private GhostService ghostService;
+
+    @Autowired
     private OgameApiService ogameApiService;
 
     @Autowired
@@ -34,21 +37,23 @@ public class IsUnderAttackService {
 
     @Scheduled(cron = "20 * * * * *") // every minute
     public void isUnderAttack() {
-        if (this.ogameApiService.isUnderAttack()) {
+        if (!this.ghostService.isGhosted()) {
+            if (this.ogameApiService.isUnderAttack()) {
 
-            List<AttackDto> attacks = this.ogameApiService.getAttacks();
+                List<AttackDto> attacks = this.ogameApiService.getAttacks();
 
-            for (AttackDto attack : attacks) {
-                if (ShipsUtils.countAttackShips(attack.getShips()) > this.ogameProperties.IS_UNDER_ATTACK_ENEMY_VAISSEAUX_MIN || attack.getShips().getDeathstar() > 0) {
-                    this.messageService.logInfo("/!\\ /!\\ /!\\ Alerte générale ! (Attaque de " + attack.getAttackerName() + ") /!\\ /!\\ /!\\", Boolean.TRUE, Boolean.TRUE);
+                for (AttackDto attack : attacks) {
+                    if (ShipsUtils.countAttackShips(attack.getShips()) > this.ogameProperties.IS_UNDER_ATTACK_ENEMY_VAISSEAUX_MIN || attack.getShips().getDeathstar() > 0) {
+                        this.messageService.logInfo("/!\\ /!\\ /!\\ Alerte générale ! (Attaque de " + attack.getAttackerName() + ") /!\\ /!\\ /!\\", Boolean.TRUE, Boolean.TRUE);
 
-                    long diffSeconds = (attack.getArrivalTime().getTime() - new Date().getTime()) / 1000;
-                    if (diffSeconds < 4 * 60) {
-                        // Si l'attaque est dans moins de 4min, sauvetage de la flotte et des ressources
-                        this.saveFleet(attack.getDestination());
+                        long diffSeconds = (attack.getArrivalTime().getTime() - new Date().getTime()) / 1000;
+                        if (diffSeconds < 4 * 60) {
+                            // Si l'attaque est dans moins de 4min, sauvetage de la flotte et des ressources
+                            this.saveFleet(attack.getDestination());
+                        }
+                    } else if (attack.getMissionType().equals(OgameCst.SPY)) {
+                        this.messageService.logInfo("Espionnage de la part de " + attack.getAttackerName(), Boolean.FALSE, Boolean.FALSE);
                     }
-                } else if (attack.getMissionType().equals(OgameCst.SPY)) {
-                    this.messageService.logInfo("Espionnage de la part de " + attack.getAttackerName(), Boolean.FALSE, Boolean.FALSE);
                 }
             }
         }

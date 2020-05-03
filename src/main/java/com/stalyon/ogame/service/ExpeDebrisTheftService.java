@@ -22,6 +22,9 @@ import java.util.List;
 public class ExpeDebrisTheftService {
 
     @Autowired
+    private GhostService ghostService;
+
+    @Autowired
     private OgameApiService ogameApiService;
 
     @Autowired
@@ -35,7 +38,7 @@ public class ExpeDebrisTheftService {
 
     @Scheduled(cron = "50 0/3 * * * *") // every 3-minutes
     public void checkExpeditionDebris() {
-        if (this.ogameProperties.EXPE_THEFT_AUTO) {
+        if (this.ogameProperties.EXPE_THEFT_AUTO && !this.ghostService.isAfkPeriod(Boolean.TRUE)) {
             for (int i = 0; i < this.ogameProperties.EXPE_THEFT_PLANET_ID.size(); i++) {
                 for (int j = this.ogameProperties.EXPE_THEFT_COORD_SYSTEM_MIN.get(i); j <= this.ogameProperties.EXPE_THEFT_COORD_SYSTEM_MAX.get(i); j++) {
                     GalaxyInfosDto galaxyInfos = this.ogameApiService.getGalaxyInfos(this.ogameProperties.EXPE_THEFT_COORD_GALAXY.get(i), j);

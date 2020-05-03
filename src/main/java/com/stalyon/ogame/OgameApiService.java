@@ -201,14 +201,18 @@ public class OgameApiService {
         }
     }
 
-    public void sendFleet(Integer destinationId, MultiValueMap<String, String> formData) {
+    public SendFleetDto sendFleet(Integer destinationId, MultiValueMap<String, String> formData) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(formData, headers);
         try {
-            restTemplate.postForEntity(this.ogameProperties.BOT_URL + "/planets/" + destinationId + "/send-fleet",
-                    request, SendFleetResponseDto.class);
+            ResponseEntity<SendFleetResponseDto> response = restTemplate.postForEntity(
+                    this.ogameProperties.BOT_URL + "/planets/" + destinationId + "/send-fleet",
+                    request, SendFleetResponseDto.class
+            );
+
+            return response.getBody() != null ? response.getBody().getResult() : null;
         } catch (Exception e) {
             Pattern pattern = Pattern.compile("\"Message\":\"(.*)\",\"Result");
             Matcher matcher = pattern.matcher(e.getMessage());
@@ -218,5 +222,6 @@ public class OgameApiService {
                 LOGGER.error(e.getMessage(), e);
             }
         }
+        return null;
     }
 }

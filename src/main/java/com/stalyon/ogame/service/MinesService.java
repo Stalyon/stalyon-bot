@@ -25,6 +25,9 @@ import java.util.stream.Collectors;
 public class MinesService {
 
     @Autowired
+    private GhostService ghostService;
+
+    @Autowired
     private OgameApiService ogameApiService;
 
     @Autowired
@@ -43,7 +46,7 @@ public class MinesService {
 
     @Scheduled(cron = "0 0/2 * * * *") // every 2-minutes
     public void autoBuild() {
-        if (this.ogameProperties.MINES_AUTO_BUILD_ENABLE) {
+        if (this.ogameProperties.MINES_AUTO_BUILD_ENABLE && !this.ghostService.isAfkPeriod(Boolean.FALSE)) {
             // Récupération des planètes
             List<PlanetDto> planets = this.ogameApiService.getPlanets();
 
@@ -116,7 +119,7 @@ public class MinesService {
 
     @Scheduled(cron = "50 0/15 * * * *") // every 15-minutes
     public void autoBuildTransport() {
-        if (this.ogameProperties.MINES_AUTO_BUILD_TRANSPORT) {
+        if (this.ogameProperties.MINES_AUTO_BUILD_TRANSPORT && !this.ghostService.isAfkPeriod(Boolean.TRUE)) {
             // Récupération des planètes / lunes
             List<PlanetDto> myPlanets = this.ogameApiService.getPlanets();
             List<PlanetClusterizedHelperDto> planetsClusterized = new ArrayList<>();

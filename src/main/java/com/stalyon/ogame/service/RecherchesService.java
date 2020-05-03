@@ -22,6 +22,9 @@ import java.util.stream.Collectors;
 public class RecherchesService {
 
     @Autowired
+    private GhostService ghostService;
+
+    @Autowired
     private OgameApiService ogameApiService;
 
     @Autowired
@@ -35,7 +38,7 @@ public class RecherchesService {
 
     @Scheduled(cron = "0 0/3 * * * *") // every 3-minutes
     public void launchRecherche() {
-        if (this.ogameProperties.RECHERCHES_BUILD_AUTO) {
+        if (this.ogameProperties.RECHERCHES_BUILD_AUTO && !this.ghostService.isAfkPeriod(Boolean.FALSE)) {
             PlanetDto planet = this.ogameApiService.getPlanet(this.ogameProperties.RECHERCHES_BUILD_PLANET_ID);
             PlanetsConstructionsDto constructions = this.ogameApiService.getPlanetsConstructions(planet);
 
@@ -64,89 +67,91 @@ public class RecherchesService {
     }
 
     private void transportResources(PlanetDto planet, Integer technoId, Integer technoLvl) {
-        List<PlanetDto> myPlanets = this.ogameApiService.getPlanets();
-        PlanetsResourcesDto cost = this.ogameApiService.getPrice(technoId, technoLvl);
-        PlanetsResourcesDto resources = this.ogameApiService.getPlanetsResources(planet);
-        List<PlanetClusterizedHelperDto> planetsClusterized = new ArrayList<>();
+        if (!this.ghostService.isAfkPeriod(Boolean.TRUE)) {
+            List<PlanetDto> myPlanets = this.ogameApiService.getPlanets();
+            PlanetsResourcesDto cost = this.ogameApiService.getPrice(technoId, technoLvl);
+            PlanetsResourcesDto resources = this.ogameApiService.getPlanetsResources(planet);
+            List<PlanetClusterizedHelperDto> planetsClusterized = new ArrayList<>();
 
-        List<PlanetDto> planets = new ArrayList<>();
-        myPlanets.forEach(p -> {
-            planets.add(p);
+            List<PlanetDto> planets = new ArrayList<>();
+            myPlanets.forEach(p -> {
+                planets.add(p);
 
-            if (p.getMoon() != null) {
-                planets.add(new PlanetDto(
-                        p.getMoon().getId(),
-                        p.getMoon().getName(),
-                        p.getMoon().getCoordinate(),
-                        null,
-                        true
-                ));
-            }
-        });
+                if (p.getMoon() != null) {
+                    planets.add(new PlanetDto(
+                            p.getMoon().getId(),
+                            p.getMoon().getName(),
+                            p.getMoon().getCoordinate(),
+                            null,
+                            true
+                    ));
+                }
+            });
 
-        planets
-                .stream()
-                .filter(p -> this.ogameProperties.RECHERCHES_TRANSPORT_PLANETS_CLUSTERIZED != null
-                        && this.ogameProperties.RECHERCHES_TRANSPORT_PLANETS_CLUSTERIZED.stream().anyMatch(pl -> pl.equals(p.getId())))
-                .forEach(p -> {
-            PlanetsResourcesDto clusterizedPlanetResources = this.ogameApiService.getPlanetsResources(p);
+            planets
+                    .stream()
+                    .filter(p -> this.ogameProperties.RECHERCHES_TRANSPORT_PLANETS_CLUSTERIZED != null
+                            && this.ogameProperties.RECHERCHES_TRANSPORT_PLANETS_CLUSTERIZED.stream().anyMatch(pl -> pl.equals(p.getId())))
+                    .forEach(p -> {
+                        PlanetsResourcesDto clusterizedPlanetResources = this.ogameApiService.getPlanetsResources(p);
 
-            planetsClusterized.add(new PlanetClusterizedHelperDto(null, p, null, null, clusterizedPlanetResources));
-        });
+                        planetsClusterized.add(new PlanetClusterizedHelperDto(null, p, null, null, clusterizedPlanetResources));
+                    });
 
-        List<PlanetClusterizedHelperDto> sorted = planetsClusterized.stream()
-                .sorted((p1, p2) -> (p2.getResources().getMetal() + p2.getResources().getCrystal() + p2.getResources().getDeuterium()) - (p1.getResources().getMetal() + p1.getResources().getCrystal() + p1.getResources().getDeuterium()))
-                .collect(Collectors.toList());
+            List<PlanetClusterizedHelperDto> sorted = planetsClusterized.stream()
+                    .sorted((p1, p2) -> (p2.getResources().getMetal() + p2.getResources().getCrystal() + p2.getResources().getDeuterium()) - (p1.getResources().getMetal() + p1.getResources().getCrystal() + p1.getResources().getDeuterium()))
+                    .collect(Collectors.toList());
 
-        if (cost.getMetal() <= this.totalMetalPlanets(sorted)
-                && cost.getCrystal() <= this.totalCrystalPlanets(sorted)
-                && cost.getDeuterium() <= this.totalDeutPlanets(sorted)) {
-            Integer metalMissing = cost.getMetal() - resources.getMetal();
-            Integer crystalMissing = cost.getCrystal() - resources.getCrystal();
-            Integer deutMissing = cost.getDeuterium() - resources.getDeuterium();
-            metalMissing = metalMissing < 0 ? 0 : metalMissing;
-            crystalMissing = crystalMissing < 0 ? 0 : crystalMissing;
-            deutMissing = deutMissing < 0 ? 0 : deutMissing;
+            if (cost.getMetal() <= this.totalMetalPlanets(sorted)
+                    && cost.getCrystal() <= this.totalCrystalPlanets(sorted)
+                    && cost.getDeuterium() <= this.totalDeutPlanets(sorted)) {
+                Integer metalMissing = cost.getMetal() - resources.getMetal();
+                Integer crystalMissing = cost.getCrystal() - resources.getCrystal();
+                Integer deutMissing = cost.getDeuterium() - resources.getDeuterium();
+                metalMissing = metalMissing < 0 ? 0 : metalMissing;
+                crystalMissing = crystalMissing < 0 ? 0 : crystalMissing;
+                deutMissing = deutMissing < 0 ? 0 : deutMissing;
 
-            for (PlanetClusterizedHelperDto pc : sorted) {
-                Integer metalToSend = metalMissing > pc.getResources().getMetal() ? pc.getResources().getMetal() : metalMissing;
-                Integer crystalToSend = crystalMissing > pc.getResources().getCrystal() ? pc.getResources().getCrystal() : crystalMissing;
-                Integer deutToSend = deutMissing > pc.getResources().getDeuterium() ? pc.getResources().getDeuterium() : deutMissing;
-                Integer nbLargeCargo = ((metalToSend + crystalToSend + deutToSend) / this.ogameProperties.RECHERCHES_TRANSPORT_STOCKAGE) + 1;
+                for (PlanetClusterizedHelperDto pc : sorted) {
+                    Integer metalToSend = metalMissing > pc.getResources().getMetal() ? pc.getResources().getMetal() : metalMissing;
+                    Integer crystalToSend = crystalMissing > pc.getResources().getCrystal() ? pc.getResources().getCrystal() : crystalMissing;
+                    Integer deutToSend = deutMissing > pc.getResources().getDeuterium() ? pc.getResources().getDeuterium() : deutMissing;
+                    Integer nbLargeCargo = ((metalToSend + crystalToSend + deutToSend) / this.ogameProperties.RECHERCHES_TRANSPORT_STOCKAGE) + 1;
 
-                MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-                formData.add("ships", OgameCst.LARGE_CARGO_ID + "," + nbLargeCargo);
-                formData.add("mission", OgameCst.TRANSPORT.toString());
-                formData.add("speed", OgameCst.HUNDRED_PERCENT.toString());
-                formData.add("galaxy", planet.getCoordinate().getGalaxy().toString());
-                formData.add("system", planet.getCoordinate().getSystem().toString());
-                formData.add("position", planet.getCoordinate().getPosition().toString());
-                formData.add("metal", metalToSend.toString());
-                formData.add("crystal", crystalToSend.toString());
-                formData.add("deuterium", deutToSend.toString());
+                    MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+                    formData.add("ships", OgameCst.LARGE_CARGO_ID + "," + nbLargeCargo);
+                    formData.add("mission", OgameCst.TRANSPORT.toString());
+                    formData.add("speed", OgameCst.HUNDRED_PERCENT.toString());
+                    formData.add("galaxy", planet.getCoordinate().getGalaxy().toString());
+                    formData.add("system", planet.getCoordinate().getSystem().toString());
+                    formData.add("position", planet.getCoordinate().getPosition().toString());
+                    formData.add("metal", metalToSend.toString());
+                    formData.add("crystal", crystalToSend.toString());
+                    formData.add("deuterium", deutToSend.toString());
 
-                if (metalToSend > 0 || crystalToSend > 0 || deutToSend > 0) {
-                    ShipsDto ships = this.ogameApiService.getShips(pc.getPlanet().getId());
+                    if (metalToSend > 0 || crystalToSend > 0 || deutToSend > 0) {
+                        ShipsDto ships = this.ogameApiService.getShips(pc.getPlanet().getId());
 
-                    if (ships.getLargeCargo() >= nbLargeCargo) {
-                        this.messageService.logInfo("Transport de ressources (Métal = " + metalToSend + ", Cristal = " + crystalToSend
-                                        + ", Deut = " + deutToSend + ") de " + pc.getPlanet().getName() + " pour nouvelle recherche",
-                                Boolean.FALSE, Boolean.FALSE);
-                        this.ogameApiService.sendFleet(pc.getPlanet().getId(), formData);
+                        if (ships.getLargeCargo() >= nbLargeCargo) {
+                            this.messageService.logInfo("Transport de ressources (Métal = " + metalToSend + ", Cristal = " + crystalToSend
+                                            + ", Deut = " + deutToSend + ") de " + pc.getPlanet().getName() + " pour nouvelle recherche",
+                                    Boolean.FALSE, Boolean.FALSE);
+                            this.ogameApiService.sendFleet(pc.getPlanet().getId(), formData);
 
-                        metalMissing = metalMissing - metalToSend;
-                        crystalMissing = crystalMissing - crystalToSend;
-                        deutMissing = deutMissing - deutToSend;
-                        metalMissing = metalMissing < 0 ? 0 : metalMissing;
-                        crystalMissing = crystalMissing < 0 ? 0 : crystalMissing;
-                        deutMissing = deutMissing < 0 ? 0 : deutMissing;
+                            metalMissing = metalMissing - metalToSend;
+                            crystalMissing = crystalMissing - crystalToSend;
+                            deutMissing = deutMissing - deutToSend;
+                            metalMissing = metalMissing < 0 ? 0 : metalMissing;
+                            crystalMissing = crystalMissing < 0 ? 0 : crystalMissing;
+                            deutMissing = deutMissing < 0 ? 0 : deutMissing;
 
-                        if (metalMissing <= 0 && crystalMissing <= 0 && deutMissing <= 0) {
-                            return;
+                            if (metalMissing <= 0 && crystalMissing <= 0 && deutMissing <= 0) {
+                                return;
+                            }
+                        } else {
+                            this.messageService.logInfo("Impossible d'envoyer les ressources depuis " + pc.getPlanet().getName()
+                                    + ", pas de GT disponibles", Boolean.FALSE, Boolean.FALSE);
                         }
-                    } else {
-                        this.messageService.logInfo("Impossible d'envoyer les ressources depuis " + pc.getPlanet().getName()
-                                + ", pas de GT disponibles", Boolean.FALSE, Boolean.FALSE);
                     }
                 }
             }

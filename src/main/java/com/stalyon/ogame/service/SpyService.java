@@ -27,6 +27,9 @@ import java.util.stream.Collectors;
 public class SpyService {
 
     @Autowired
+    private GhostService ghostService;
+
+    @Autowired
     private OgameApiService ogameApiService;
 
     @Autowired
@@ -43,7 +46,7 @@ public class SpyService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void scan() {
-        if (this.ogameProperties.SPY_ENABLE) {
+        if (this.ogameProperties.SPY_ENABLE && !this.ghostService.isAfkPeriod(Boolean.FALSE)) {
             for (int i = this.ogameProperties.SPY_COORD_SYSTEM_MIN; i < this.ogameProperties.SPY_COORD_SYSTEM_MAX; i++) {
                 GalaxyInfosDto galaxyInfos = this.ogameApiService.getGalaxyInfos(this.ogameProperties.SPY_COORD_GALAXY, i);
 
@@ -77,7 +80,7 @@ public class SpyService {
 
     @Scheduled(cron = "0/10 * * * * *") // every minute
     public void spy() {
-        if (this.ogameProperties.SPY_ENABLE && !this.coordsToSpy.isEmpty()) {
+        if (this.ogameProperties.SPY_ENABLE && !this.ghostService.isAfkPeriod(Boolean.TRUE) && !this.coordsToSpy.isEmpty()) {
 
             while (!this.coordsToSpy.isEmpty() && this.slotsService.hasEnoughFreeSlots(1)
                     && this.index < this.coordsToSpy.size()) {

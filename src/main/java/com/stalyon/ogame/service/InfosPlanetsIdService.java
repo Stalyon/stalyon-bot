@@ -17,6 +17,9 @@ import java.util.List;
 public class InfosPlanetsIdService {
 
     @Autowired
+    private GhostService ghostService;
+
+    @Autowired
     private OgameApiService ogameApiService;
 
     @Autowired
@@ -27,7 +30,7 @@ public class InfosPlanetsIdService {
 
     @EventListener(ApplicationReadyEvent.class)
     public void run() {
-        if (this.ogameProperties.INFOS_PLANETS_ID_ENABLE) {
+        if (this.ogameProperties.INFOS_PLANETS_ID_ENABLE && !this.ghostService.isAfkPeriod(Boolean.FALSE)) {
             List<PlanetDto> planets = this.ogameApiService.getPlanets();
 
             planets.forEach(planet -> {

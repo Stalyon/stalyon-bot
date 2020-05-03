@@ -47,12 +47,12 @@ public class GhostService {
                     this.ghosted = Boolean.TRUE;
                 }
             }
+        } else {
+            this.ghosted = Boolean.FALSE;
         }
-
-        this.ghosted = Boolean.FALSE;
     }
 
-    @Scheduled(cron = "30 1/5 * * * *") // every 5-minutes
+    @Scheduled(cron = "30 3/5 * * * *") // every 5-minutes
     public void fakeActivity() {
         if (this.doFakeActivity > 0) {
             // TODO: fake activity
@@ -89,37 +89,41 @@ public class GhostService {
 
     private void ghost() {
         for (int i = 0; i < this.ogameProperties.GHOST_PLANET_FROM.size(); i++) {
-            PlanetsResourcesDto resources = this.ogameApiService
-                    .getPlanetsResources(new PlanetDto(this.ogameProperties.GHOST_PLANET_FROM.get(i), null, null, null, null));
+            try {
+                PlanetsResourcesDto resources = this.ogameApiService
+                        .getPlanetsResources(new PlanetDto(this.ogameProperties.GHOST_PLANET_FROM.get(i), null, null, null, null));
 
-            // Ghost
-            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-            ShipsUtils.allShips().forEach(ship -> formData.add("ships", ship));
-            formData.add("speed", (String.valueOf(this.ogameProperties.GHOST_SPEED.get(i) / 10)));
-            formData.add("galaxy", this.ogameProperties.GHOST_COORD_TO_GALAXY.get(i).toString());
-            formData.add("system", this.ogameProperties.GHOST_COORD_TO_SYSTEM.get(i).toString());
-            formData.add("position", this.ogameProperties.GHOST_COORD_TO_POSITION.get(i).toString());
-            formData.add("type", this.ogameProperties.GHOST_COORD_TO_TYPE.get(i).toString());
-            formData.add("mission", this.ogameProperties.GHOST_MISSION.get(i).toString());
-            formData.add("metal", resources.getMetal().toString());
-            formData.add("crystal", resources.getCrystal().toString());
-            formData.add("deuterium", resources.getDeuterium().toString());
-            SendFleetDto sendFleet = this.ogameApiService.sendFleet(this.ogameProperties.GHOST_PLANET_FROM.get(i), formData);
+                // Ghost
+                MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+                ShipsUtils.allShips().forEach(ship -> formData.add("ships", ship));
+                formData.add("speed", (String.valueOf(this.ogameProperties.GHOST_SPEED.get(i) / 10)));
+                formData.add("galaxy", this.ogameProperties.GHOST_COORD_TO_GALAXY.get(i).toString());
+                formData.add("system", this.ogameProperties.GHOST_COORD_TO_SYSTEM.get(i).toString());
+                formData.add("position", this.ogameProperties.GHOST_COORD_TO_POSITION.get(i).toString());
+                formData.add("type", this.ogameProperties.GHOST_COORD_TO_TYPE.get(i).toString());
+                formData.add("mission", this.ogameProperties.GHOST_MISSION.get(i).toString());
+                formData.add("metal", resources.getMetal().toString());
+                formData.add("crystal", resources.getCrystal().toString());
+                formData.add("deuterium", resources.getDeuterium().toString());
+                SendFleetDto sendFleet = this.ogameApiService.sendFleet(this.ogameProperties.GHOST_PLANET_FROM.get(i), formData);
 
-            Date arrivalTime = sendFleet.getBackTime();
-            if (this.ogameProperties.GHOST_MISSION.get(i).equals(OgameCst.PARK)) {
-                arrivalTime = sendFleet.getArrivalTime();
+                Date arrivalTime = sendFleet.getBackTime();
+                if (this.ogameProperties.GHOST_MISSION.get(i).equals(OgameCst.PARK)) {
+                    arrivalTime = sendFleet.getArrivalTime();
+                }
+
+                if (this.arrivalTime == null || arrivalTime.after(this.arrivalTime)) {
+                    this.arrivalTime = arrivalTime;
+                }
+
+                this.messageService.logInfo("Ghost vers " + this.ogameProperties.GHOST_COORD_TO_GALAXY.get(i) + ":"
+                        + this.ogameProperties.GHOST_COORD_TO_SYSTEM.get(i) + ":"
+                        + this.ogameProperties.GHOST_COORD_TO_POSITION.get(i), Boolean.FALSE, Boolean.FALSE);
+            } catch (Exception e) {
+                // Ignore
             }
 
-            if (this.arrivalTime == null || arrivalTime.after(this.arrivalTime)) {
-                this.arrivalTime = arrivalTime;
-            }
-
-            this.messageService.logInfo("Ghost vers " + this.ogameProperties.GHOST_COORD_TO_GALAXY.get(i) + ":"
-                    + this.ogameProperties.GHOST_COORD_TO_SYSTEM.get(i) + ":"
-                    + this.ogameProperties.GHOST_COORD_TO_POSITION.get(i), Boolean.FALSE, Boolean.FALSE);
+            this.doFakeActivity = 2;
         }
-
-        this.doFakeActivity = 2;
     }
 }

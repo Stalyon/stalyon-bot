@@ -88,7 +88,7 @@ public class OgameProperties {
     @Value("${expedition.vaisseau.petittransporteur}")
     public Integer EXPEDITION_SMALL_CARGO;
 
-    @Value("${expedition.vaisseau.grostransporteur}")
+    @Value("${expedition.vaisseau.grandtransporteur}")
     public Integer EXPEDITION_LARGE_CARGO;
 
     @Value("${expedition.vaisseau.chasseurleger}")

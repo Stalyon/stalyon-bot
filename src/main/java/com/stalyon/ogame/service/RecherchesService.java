@@ -59,6 +59,8 @@ public class RecherchesService {
                             // Lancer un transport
                             this.transportResources(planet, this.ogameProperties.RECHERCHES_BUILD_QUEUE_TECHNOS_ID.get(i), this.ogameProperties.RECHERCHES_BUILD_QUEUE_TECHNOS_LVL.get(i));
                             return;
+                        } {
+                            return;
                         }
                     }
                 }
